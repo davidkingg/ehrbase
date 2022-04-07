@@ -1,5 +1,7 @@
 /*
- * Copyright 2021-2022 vitasystems GmbH and Hannover Medical School.
+ * Copyright (c) 2021-2022 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.application.config.validation;
 
 import java.util.Map;
@@ -40,49 +41,51 @@ import org.springframework.context.annotation.Configuration;
 @SuppressWarnings("java:S6212")
 public class ValidationConfiguration {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  private final ValidationProperties properties;
+    private final ValidationProperties properties;
 
-  private final HttpClient httpClient;
+    private final HttpClient httpClient;
 
-  public ValidationConfiguration(ValidationProperties properties, HttpClient httpClient) {
-    this.properties = properties;
-    this.httpClient = httpClient;
-  }
-
-  @Bean
-  public ExternalTerminologyValidation externalTerminologyValidator() {
-    Map<String, ValidationProperties.Provider> providers = properties.getProvider();
-
-    if (providers.isEmpty()) {
-      throw new IllegalStateException(
-          "At least one external terminology provider must be defined " +
-              "if 'validation.external-validation.enabled' is set to 'true'");
-    } else if (providers.size() == 1) {
-      Map.Entry<String, ValidationProperties.Provider> provider = providers.entrySet().iterator()
-          .next();
-      return buildExternalTerminologyValidation(provider);
-    } else {
-      ExternalTerminologyValidationChain chain = new ExternalTerminologyValidationChain();
-      for (Map.Entry<String, ValidationProperties.Provider> provider : providers.entrySet()) {
-        chain.addExternalTerminologyValidationSupport(buildExternalTerminologyValidation(provider));
-      }
-      return chain;
+    public ValidationConfiguration(ValidationProperties properties, HttpClient httpClient) {
+        this.properties = properties;
+        this.httpClient = httpClient;
     }
-  }
 
-  private ExternalTerminologyValidation buildExternalTerminologyValidation(
-      Map.Entry<String, ValidationProperties.Provider> provider) {
-    logger.info("Initializing '{}' external terminology provider (type: {})", provider.getKey(),
-        provider.getValue().getType());
-    if (provider.getValue().getType() == ValidationProperties.ProviderType.FHIR) {
-      return fhirTerminologyValidation(provider.getValue().getUrl());
+    @Bean
+    public ExternalTerminologyValidation externalTerminologyValidator() {
+        Map<String, ValidationProperties.Provider> providers = properties.getProvider();
+
+        if (providers.isEmpty()) {
+            throw new IllegalStateException("At least one external terminology provider must be defined "
+                    + "if 'validation.external-validation.enabled' is set to 'true'");
+        } else if (providers.size() == 1) {
+            Map.Entry<String, ValidationProperties.Provider> provider =
+                    providers.entrySet().iterator().next();
+            return buildExternalTerminologyValidation(provider);
+        } else {
+            ExternalTerminologyValidationChain chain = new ExternalTerminologyValidationChain();
+            for (Map.Entry<String, ValidationProperties.Provider> provider : providers.entrySet()) {
+                chain.addExternalTerminologyValidationSupport(buildExternalTerminologyValidation(provider));
+            }
+            return chain;
+        }
     }
-    throw new IllegalArgumentException("Invalid provider type: " + provider.getValue().getType());
-  }
 
-  private FhirTerminologyValidation fhirTerminologyValidation(String url) {
-    return new FhirTerminologyValidation(url, properties.isFailOnError(), httpClient);
-  }
+    private ExternalTerminologyValidation buildExternalTerminologyValidation(
+            Map.Entry<String, ValidationProperties.Provider> provider) {
+        logger.info(
+                "Initializing '{}' external terminology provider (type: {})",
+                provider.getKey(),
+                provider.getValue().getType());
+        if (provider.getValue().getType() == ValidationProperties.ProviderType.FHIR) {
+            return fhirTerminologyValidation(provider.getValue().getUrl());
+        }
+        throw new IllegalArgumentException(
+                "Invalid provider type: " + provider.getValue().getType());
+    }
+
+    private FhirTerminologyValidation fhirTerminologyValidation(String url) {
+        return new FhirTerminologyValidation(url, properties.isFailOnError(), httpClient);
+    }
 }

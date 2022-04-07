@@ -1,17 +1,13 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School).
-
- * This file is part of Project EHRbase
-
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
+ *
+ * This file is part of project EHRbase
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,19 +17,18 @@
  */
 package org.ehrbase.ehr.knowledge;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.aql.containment.JsonPathQueryResult;
-import org.ehrbase.webtemplate.parser.NodeId;
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.aql.containment.JsonPathQueryResult;
+import org.ehrbase.webtemplate.parser.NodeId;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface I_KnowledgeCache {
 
@@ -54,8 +49,6 @@ public interface I_KnowledgeCache {
 
     List<TemplateMetaData> listAllOperationalTemplates() throws IOException;
 
-
-
     /**
      * retrieve an operational template document instance
      *
@@ -74,7 +67,6 @@ public interface I_KnowledgeCache {
      * @see org.openehr.schemas.v1.OPERATIONALTEMPLATE
      */
     Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(UUID uuid);
-
 
     /**
      * Deletes a given operational template physically from cache and from template storage and from cache. Should only
