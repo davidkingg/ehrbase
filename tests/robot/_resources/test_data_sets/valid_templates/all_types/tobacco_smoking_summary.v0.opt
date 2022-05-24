@@ -173,7 +173,7 @@
                             </existence>
                             <match_negated>false</match_negated>
                             <children xsi:type="ARCHETYPE_SLOT">
-<rm_type_name>ITEM</rm_type_name>
+<rm_type_name>CLUSTER</rm_type_name>
 <occurrences>
     <lower_included>true</lower_included>
     <upper_included>false</upper_included>
