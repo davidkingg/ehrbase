@@ -68,7 +68,12 @@ Test Example Generator For Template (ECIS) - Specific Template
     Extract Template Id From OPT File
     Get Example Of Web Template By Template Id (ECIS)    ${template_id}    JSON
     Validate Response Body Has Format    JSON
-    #PerformChecksOnAnnotation
+    #${returnValue0}  Get Value From Json     ${response}
+    #...     $.content[0].data.items.[0][*].value
+    #${returnValue1}  Get Value From Json     ${response}
+    #...     $.content[0].data.items.[1][*].value
+    #${returnValue2}  Get Value From Json     ${response}
+    #...     $.content[0].data.items.[2][*].value
     [Teardown]    TRACE JIRA ISSUE    CDR-410
 
 *** Keywords ***
