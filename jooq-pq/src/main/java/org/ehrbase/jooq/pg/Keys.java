@@ -28,6 +28,7 @@ import org.ehrbase.jooq.pg.tables.Concept;
 import org.ehrbase.jooq.pg.tables.Contribution;
 import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.jooq.pg.tables.Entry;
+import org.ehrbase.jooq.pg.tables.Entry2;
 import org.ehrbase.jooq.pg.tables.EventContext;
 import org.ehrbase.jooq.pg.tables.FlywaySchemaHistory;
 import org.ehrbase.jooq.pg.tables.Folder;
@@ -61,6 +62,7 @@ import org.ehrbase.jooq.pg.tables.records.CompositionRecord;
 import org.ehrbase.jooq.pg.tables.records.ConceptRecord;
 import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
+import org.ehrbase.jooq.pg.tables.records.Entry2Record;
 import org.ehrbase.jooq.pg.tables.records.EntryRecord;
 import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
 import org.ehrbase.jooq.pg.tables.records.FlywaySchemaHistoryRecord;
@@ -135,6 +137,9 @@ public class Keys {
             Entry.ENTRY, DSL.name("entry_composition_id_key"), new TableField[] {Entry.ENTRY.COMPOSITION_ID}, true);
     public static final UniqueKey<EntryRecord> ENTRY_PKEY =
             Internal.createUniqueKey(Entry.ENTRY, DSL.name("entry_pkey"), new TableField[] {Entry.ENTRY.ID}, true);
+    public static final UniqueKey<Entry2Record> ENTRY2_PKEY = Internal.createUniqueKey(
+            Entry2.ENTRY2, DSL.name("entry2_pkey"), new TableField[] {Entry2.ENTRY2.COMP_ID, Entry2.ENTRY2.NUM}, true);
+
     public static final UniqueKey<EventContextRecord> EVENT_CONTEXT_PKEY = Internal.createUniqueKey(
             EventContext.EVENT_CONTEXT,
             DSL.name("event_context_pkey"),
@@ -421,6 +426,14 @@ public class Keys {
                     Keys.COMPOSITION_PKEY,
                     new TableField[] {Composition.COMPOSITION.ID},
                     true);
+    public static final ForeignKey<Entry2Record, EhrRecord> ENTRY2__ENTRY2_EHR_ID_FKEY = Internal.createForeignKey(
+            Entry2.ENTRY2,
+            DSL.name("entry2_ehr_id_fkey"),
+            new TableField[] {Entry2.ENTRY2.EHR_ID},
+            Keys.EHR_PKEY,
+            new TableField[] {Ehr.EHR_.ID},
+            true);
+
     public static final ForeignKey<EventContextRecord, CompositionRecord>
             EVENT_CONTEXT__EVENT_CONTEXT_COMPOSITION_ID_FKEY = Internal.createForeignKey(
                     EventContext.EVENT_CONTEXT,
