@@ -128,6 +128,41 @@ create new EHR
                             Output Debug Info To Console  # NOTE: won't work with content-type=XML
     END
 
+Create Session For EHR With Headers For Multitenancy With Bearer Token
+    [Arguments]     ${encodedToken}
+    &{additionalHeaders}    Create Dictionary
+    ...         Prefer=return=representation    Authorization=Bearer ${encodedToken}
+    &{headers}          Create Dictionary     &{EMPTY}
+                        Set To Dictionary    ${headers}
+                        ...                  Content-Type=application/json
+                        ...                  Accept=application/json
+                        ...                  &{additionalHeaders}
+    Create Session      ${SUT}    ${BASEURL}    debug=2
+                        ...                 headers=${headers}    verify=True
+                        Set Suite Variable   ${headers}    ${headers}
+
+Create New EHR With Multitenant Token
+    [Documentation]     Creates new EHR record with a server-generated ehr_id and multitenant token.
+    ...     Takes 1 argument, encodedToken (mandatory).
+    ...     EHR will be created with Authorization=Bearer {encodedToken} in headers.
+    [Arguments]     ${encodedToken}
+    Create Session For EHR With Headers For Multitenancy With Bearer Token      ${encodedToken}
+    ${resp}             POST on session     ${SUT}    /ehr
+    ...         expected_status=anything        headers=${headers}
+    Should Be Equal As Strings      ${resp.status_code}     201
+    ${ehrstatus_uid}    Set Variable        ${resp.json()['ehr_status']['uid']['value']}
+    ${short_uid}        Remove String       ${ehrstatus_uid}    ::${CREATING_SYSTEM_ID}::1
+    Set Suite Variable    ${ehr_id}         ${resp.json()['ehr_id']['value']}
+    Set Suite Variable    ${system_id}      ${resp.json()['system_id']['value']}
+    Set Suite Variable    ${ehr_status}     ${resp.json()['ehr_status']}
+    Set Suite Variable    ${versioned_status_uid}       ${short_uid}
+    Set Suite Variable    ${response}       ${resp}
+    Log     ${ehr_id}
+    Log     ${system_id}
+    Log     ${ehr_status}
+    Log     ${versioned_status_uid}
+
+
 #TODO: @WLAD  rename KW name when refactor this resource file
 create supernew ehr
     [Documentation]     Creates new EHR record with a server-generated ehr_id.
@@ -330,6 +365,14 @@ retrieve EHR by ehr_id
                         Output Debug Info To Console
 
                         Integer     response status         200
+
+Retrieve EHR By Ehr_id With Multitenant Token
+    [Arguments]     ${expected_code}=200
+    ${resp}             GET on session     ${SUT}    /ehr/${ehr_id}
+    ...         expected_status=anything        headers=${headers}
+    Set Suite Variable    ${response}       ${resp}
+    Set Suite Variable    ${statusCode}     ${resp.status_code}
+    Should Be Equal As Strings      ${resp.status_code}     ${expected_code}
 
 Retrieve EHR By Ehr Id (ECIS)
     [Documentation]     Retrieves EHR with specified ehr_id (ECIS endpoint).
