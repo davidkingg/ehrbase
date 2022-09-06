@@ -130,16 +130,18 @@ create new EHR
 
 Create Session For EHR With Headers For Multitenancy With Bearer Token
     [Arguments]     ${encodedToken}
+    Delete All Sessions
     &{additionalHeaders}    Create Dictionary
-    ...         Prefer=return=representation    Authorization=Bearer ${encodedToken}
-    &{headers}          Create Dictionary     &{EMPTY}
-                        Set To Dictionary    ${headers}
-                        ...                  Content-Type=application/json
-                        ...                  Accept=application/json
-                        ...                  &{additionalHeaders}
+    ...            Authorization=Bearer ${encodedToken}
+    &{headersEhrMultitenancy}          Create Dictionary     &{EMPTY}
+                        Set To Dictionary   ${headersEhrMultitenancy}
+                        ...                 Content-Type=application/json
+                        ...                 Accept=application/json
+                        ...                 Prefer=return=representation
+                        ...                 &{additionalHeaders}
     Create Session      ${SUT}    ${BASEURL}    debug=2
-                        ...                 headers=${headers}    verify=True
-                        Set Suite Variable   ${headers}    ${headers}
+                        ...                 headers=${headersEhrMultitenancy}    verify=True
+                        Set Test Variable   ${headers}    &{headersEhrMultitenancy}
 
 Create New EHR With Multitenant Token
     [Documentation]     Creates new EHR record with a server-generated ehr_id and multitenant token.

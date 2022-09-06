@@ -666,7 +666,7 @@ update non-existent composition (XML)
 
 # TODO: rename keyword properly e.g. by version_uid
 get composition by composition_uid
-    [Arguments]         ${uid}
+    [Arguments]         ${uid}      ${multitenancy_token}=${None}
     [Documentation]     :uid: version_uid
     ...                 DEPENDENCY: `prepare new request session` with proper Headers
     ...                     e.g. Content-Type=application/xml  Accept=application/xml  Prefer=return=representation
@@ -674,6 +674,16 @@ get composition by composition_uid
 
     # the uid param in the doc is verioned_object.uid but is really the version.uid,
     # because the response from the create compo has this endpoint in the Location header
+    IF  '${multitenancy_token}' != '${None}'
+        &{headers}      Create Dictionary
+        ...     Prefer=return=representation
+        ...     Content-Type=application/json
+        ...     Accept=application/json
+        ...     Authorization=Bearer ${multitenancy_token}
+        Set Test Variable      &{headers}  &{headers}
+        Delete All Sessions
+        Create Session      ${SUT}    ${BASEURL}    debug=2   headers=${headersMultitenancy}
+    END
 
     ${resp}=            GET On Session         ${SUT}    /ehr/${ehr_id}/composition/${uid}    expected_status=anything   headers=${headers}
                         log to console      ${resp.content}
