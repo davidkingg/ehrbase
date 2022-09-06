@@ -139,7 +139,7 @@ commit composition - no referenced EHR
 
 
 commit composition (JSON)
-    [Arguments]         ${json_composition}
+    [Arguments]         ${json_composition}     ${multitenancy_token}=${None}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
@@ -151,6 +151,9 @@ commit composition (JSON)
     &{headers}=         Create Dictionary   Content-Type=application/xml
                         ...                 Accept=application/json
                         ...                 Prefer=return=representation
+    IF     '${multitenancy_token}' != '${None}'
+            Set To Dictionary   ${headers}      Authorization=Bearer ${multitenancy_token}
+    END
 
     ${resp}=            POST On Session     ${SUT}   /ehr/${ehr_id}/composition   expected_status=anything   data=${file}   headers=${headers}
                         log to console      ${resp.content}
@@ -263,11 +266,30 @@ commit same composition again
                         log to console      ${resp.content}
                         Should Be Equal As Strings   ${resp.status_code}   400
 
+Create Session For Commit Composition With Multitenant Token
+    [Documentation]     Creates new session for Commit Composition with Multitenant token.
+    ...     - Creates new headers with Authorization=Bearer {token}.
+    ...     - Clean up all the sessions.
+    ...     - Recreate the session with alias {SUT}, with new headers.
+    ...     - Set headers as suite variable called {headersMultitenancy}.
+    ...     - Takes 2 arguments: {template} and {multitenancy_token}
+    ...     - `Dependent of keyword:` commit composition.
+    [Arguments]      ${template}     ${multitenancy_token}
+    &{headers}      Create Dictionary
+    ...     Prefer=return=representation    openEHR-VERSION.lifecycle_state=complete
+    ...     openEHR-TEMPLATE_ID=${template}
+    ...     Content-Type=application/json
+    ...     Accept=application/json
+    ...     Authorization=Bearer ${multitenancy_token}
+    Set Suite Variable      &{headersMultitenancy}  &{headers}
+    Delete All Sessions
+    Create Session      ${SUT}    ${BASEURL}    debug=2   headers=${headersMultitenancy}
+
 
 commit composition
     [Arguments]         ${format}   ${composition}
     ...         ${need_template_id}=true   ${prefer}=representation
-    ...         ${lifecycle}=complete    ${extTemplateId}=false
+    ...         ${lifecycle}=complete    ${extTemplateId}=false     ${multitenancy_token}=${None}
     [Documentation]     Creates the first version of a new COMPOSITION
     ...                 DEPENDENCY: `upload OPT`, `create EHR`
     ...
@@ -284,16 +306,14 @@ commit composition
 
     &{headers}=        Create Dictionary   Prefer=return=${prefer}
     ...                openEHR-VERSION.lifecycle_state=${lifecycle}
-
     IF    '${need_template_id}' == 'true'
         Set To Dictionary   ${headers}   openEHR-TEMPLATE_ID=${template}
     END
-
     IF   '${format}'=='CANONICAL_JSON'
         Create Session      ${SUT}    ${BASEURL}    debug=2
         ...                 auth=${CREDENTIALS}    verify=True
         Set To Dictionary   ${headers}   Content-Type=application/json
-        Set To Dictionary   ${headers}   Accept=application/json    
+        Set To Dictionary   ${headers}   Accept=application/json
     ELSE IF   '${format}'=='CANONICAL_XML'
         Create Session      ${SUT}    ${BASEURL}    debug=2
         ...                 auth=${CREDENTIALS}    verify=True
@@ -328,6 +348,10 @@ commit composition
     IF          '${format}'=='FLAT'
         ${resp}     POST On Session     ${SUT}   composition   params=${params}
         ...     expected_status=anything   data=${file}   headers=${headers}
+    ELSE IF     '${multitenancy_token}' != '${None}'
+        Create Session For Commit Composition With Multitenant Token    ${template}    ${multitenancy_token}
+        ${resp}     POST On Session     ${SUT}   /ehr/${ehr_id}/composition
+        ...     expected_status=anything   data=${file}   headers=${headersMultitenancy}
     ELSE
         ${resp}     POST On Session     ${SUT}   /ehr/${ehr_id}/composition
         ...     expected_status=anything   data=${file}   headers=${headers}
