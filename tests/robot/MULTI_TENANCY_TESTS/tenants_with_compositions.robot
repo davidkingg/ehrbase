@@ -24,15 +24,15 @@ Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/ehr_keywords.robot
 Resource        ../_resources/keywords/multitenancy_keywords.robot
 
+
 *** Variables ***
 ${getCompositionPositiveCode}   200
 ${getCompositionNegativeCode}   404
 ${noCompositionFoundMsg}   No composition with given ID found
 
 
-
 *** Test Cases ***
-Create Compositions In Tentants And Check Isolation Of Data In Tenants
+Create And Get Compositions In Tentants And Check Isolation Of Data Between Tenants
     [Documentation]     Covers create and get Composition + Isolation of data between tenants.
     ...         \n*Case 1:*
     ...         - Create EHR on tenant 1
@@ -44,7 +44,7 @@ Create Compositions In Tentants And Check Isolation Of Data In Tenants
     ...         - Create Composition on tenant 2
     ...         - Get Composition from tenant 2 and expect 200 code
     ...         - Get Composition created in tenant 2, from tenant 1 and expect 404 Not Found.
-    [Tags]      Positive
+    [Tags]      Positive    Negative
     [Setup]     Upload OPT    nested/nested.opt
     ${tnt1}     Decode JWT And Get TNT Value    ${encoded_token_1}
     ${tnt2}     Decode JWT And Get TNT Value    ${encoded_token_2}
@@ -76,8 +76,68 @@ Create Compositions In Tentants And Check Isolation Of Data In Tenants
     Get Composition Values And Set Them In Variables
     get composition by composition_uid    ${version_uid}    multitenancy_token=${encoded_token_2}
     Should Be Equal As Strings      ${response.status_code}     ${getCompositionPositiveCode}
-    ## Get EHR created in tentant2 from tenant1 (negative)
+    ## Get Compositiom created in tentant2 from tenant1 (negative)
     get composition by composition_uid    ${version_uid}    multitenancy_token=${encoded_token_1}
+    Should Be Equal As Strings      ${response.status_code}     ${getCompositionNegativeCode}
+    Should Be Equal As Strings      ${response.json()['message']}   ${noCompositionFoundMsg}
+
+Create And Update Compositions In Tentants And Check Isolation Of Data Between Tenants
+    [Documentation]     Covers create and update Composition + Isolation of data between tenants.
+    ...         \n*Case 1:*
+    ...         - Create EHR on tenant 1
+    ...         - Create Composition on tenant 1
+    ...         - Get Composition from tenant 1 and expect 200 code
+    ...         - Update Composition from tenant 1 and expect 200 code
+    ...         - Get Composition created in tenant 1, from tenant 2 and expect 404 Not Found.
+    ...         \n*Case 2:*
+    ...         - Create EHR on tenant 2
+    ...         - Create Composition on tenant 2
+    ...         - Get Composition from tenant 2 and expect 200 code
+    ...         - Update Composition from tenant 2 and expect 200 code
+    ...         - Get Composition created in tenant 2, from tenant 1 and expect 404 Not Found.
+    [Tags]      Positive    Negative
+    [Setup]     Upload OPT    nested/nested.opt
+    ${tnt1}     Decode JWT And Get TNT Value    ${encoded_token_1}
+    ${tnt2}     Decode JWT And Get TNT Value    ${encoded_token_2}
+    Set Suite Variable   ${tenantTnt1}     ${tnt1}
+    Set Suite Variable   ${tenantTnt2}     ${tnt2}
+    ## Create EHR and Composition + Update Composition in tenant1 (positive)
+    Create New EHR With Multitenant Token       ${encoded_token_1}
+    Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
+    Set Suite Variable    ${ehr_id}        ${response.json()['ehr_id']['value']}
+    commit composition  format=CANONICAL_JSON
+    ...                 composition=nested.en.v1__full_without_links.json
+    ...                 multitenancy_token=${encoded_token_1}
+    Should Be Equal As Strings      ${response.status_code}     201
+    Get Composition Values And Set Them In Variables
+    update composition (JSON)
+    ...     nested.en.v2__full_without_links_updated.json   file_type=json  multitenancy_token=${encoded_token_1}
+    Should Be Equal As Strings      ${response.status_code}     200
+    ## Get Composition created and updated in tentant1 from tenant1 (positive)
+    get composition by composition_uid    ${versioned_object_uid_v2}    multitenancy_token=${encoded_token_1}
+    Should Be Equal As Strings      ${response.status_code}     200
+    ## Get Composition created and updated in tentant1 from tenant2 (negative)
+    get composition by composition_uid    ${versioned_object_uid_v2}    multitenancy_token=${encoded_token_2}
+    Should Be Equal As Strings      ${response.status_code}     ${getCompositionNegativeCode}
+    Should Be Equal As Strings      ${response.json()['message']}   ${noCompositionFoundMsg}
+    ################
+    ## Create EHR and Composition + Update Composition in tenant2 (positive)
+    Create New EHR With Multitenant Token       ${encoded_token_2}
+    Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
+    Set Suite Variable    ${ehr_id}        ${response.json()['ehr_id']['value']}
+    commit composition  format=CANONICAL_JSON
+    ...                 composition=nested.en.v1__full_without_links.json
+    ...                 multitenancy_token=${encoded_token_2}
+    Should Be Equal As Strings      ${response.status_code}     201
+    Get Composition Values And Set Them In Variables
+    update composition (JSON)
+    ...     nested.en.v2__full_without_links_updated.json   file_type=json  multitenancy_token=${encoded_token_2}
+    Should Be Equal As Strings      ${response.status_code}     200
+    ## Get Composition created and updated in tentant2 from tenant2 (positive)
+    get composition by composition_uid    ${versioned_object_uid_v2}    multitenancy_token=${encoded_token_2}
+    Should Be Equal As Strings      ${response.status_code}     200
+    ## Get Composition created and updated in tentant2 from tenant1 (negative)
+    get composition by composition_uid    ${versioned_object_uid_v2}    multitenancy_token=${encoded_token_1}
     Should Be Equal As Strings      ${response.status_code}     ${getCompositionNegativeCode}
     Should Be Equal As Strings      ${response.json()['message']}   ${noCompositionFoundMsg}
 
@@ -86,8 +146,8 @@ Create Compositions In Tentants And Check Isolation Of Data In Tenants
 Get Composition Values And Set Them In Variables
     Set Test Variable   ${composition_uid}    ${response.json()['uid']['value']}
     Set Test Variable   ${version_uid}    ${response.json()['uid']['value']}    # full/long compo uid
-    Set Test Variable   ${version_uid_v1}    ${version_uid}                  # different namesfor full uid
-    Set Test Variable   ${preceding_version_uid}    ${version_uid}          # for usage in other steps
+    Set Test Variable   ${version_uid_v1}    ${version_uid}                  # different names for full uid
+    Set Test Variable   ${preceding_version_uid}    ${version_uid}
 
     ${short_uid}=       Remove String       ${version_uid}    ::${CREATING_SYSTEM_ID}::1
                         Set Test Variable   ${compo_uid_v1}    ${short_uid}

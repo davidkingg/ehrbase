@@ -435,7 +435,7 @@ check status_code of commit composition
     
 
 update composition (JSON)
-    [Arguments]         ${new_version_of_composition}   ${file_type}=xml
+    [Arguments]         ${new_version_of_composition}   ${file_type}=xml    ${multitenancy_token}=${None}
     [Documentation]     Commit a new version for the COMPOSITION
     ...                 DEPENDENCY: `commit composition (JSON/XML)` keyword
     ...                 ENDPOINT: PUT /ehr/${ehr_id}/composition/${versioned_object_uid}
@@ -456,9 +456,7 @@ update composition (JSON)
 
                             Set Test Variable   ${response}    ${resp}
                             capture point in time    2
-    END
-
-    IF      '${file_type}' == 'json'
+    ELSE IF      '${file_type}' == 'json' and '${multitenancy_token}' == '${None}'
         ${file}=           Get File   ${COMPO DATA SETS}/${format}/${new_version_of_composition}
         &{headers}          Create Dictionary   Content-Type=application/json
                             ...                 Accept=application/json
@@ -468,6 +466,35 @@ update composition (JSON)
         &{params}          Create Dictionary     ehr_id=${ehr_id}   composition_id=${composition_id}
         ${resp}             PUT On Session         ${SUT}   /ehr/${ehr_id}/composition/${composition_id}
         ...                 data=${file}   headers=${headers}     params=${params}
+                            log to console      ${resp.content}
+                            Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
+                            Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}
+
+        ${short_uid}        Remove String       ${version_uid_v2}    ::${CREATING_SYSTEM_ID}::1
+                            Set Test Variable   ${versioned_object_uid_v2}    ${short_uid}
+
+                            Set Test Variable   ${response}    ${resp}
+                            capture point in time    2
+
+    ELSE IF      '${file_type}' == 'json' and '${multitenancy_token}' != ${None}
+        Delete All Sessions
+        ${file}=           Get File   ${COMPO DATA SETS}/${format}/${new_version_of_composition}
+        &{authorizationHeaders}    Create Dictionary
+        ...            Authorization=Bearer ${multitenancy_token}
+        &{headersUpdateCompoMultitenancy}          Create Dictionary     &{EMPTY}
+        Set To Dictionary   ${headersUpdateCompoMultitenancy}
+        ...                 Content-Type=application/json
+        ...                 Accept=application/json
+        ...                 Prefer=return=representation
+        ...                 If-Match=${composition_uid}
+        ...                 &{authorizationHeaders}
+        Create Session      ${SUT}    ${BASEURL}    debug=2
+        ...                 headers=${headersUpdateCompoMultitenancy}    verify=True
+        Set Test Variable   ${headers}      &{headersUpdateCompoMultitenancy}
+        ${composition_id}   Remove String           ${composition_uid}    ::${CREATING_SYSTEM_ID}::1
+        &{params}           Create Dictionary       ehr_id=${ehr_id}   composition_id=${composition_id}
+        ${resp}             PUT On Session          ${SUT}          /ehr/${ehr_id}/composition/${composition_id}
+        ...                 data=${file}    headers=${headers}      params=${params}
                             log to console      ${resp.content}
                             Set Test Variable   ${composition_uid_v2}    ${resp.json()['uid']['value']}    # TODO: remove
                             Set Test Variable   ${version_uid_v2}    ${resp.json()['uid']['value']}

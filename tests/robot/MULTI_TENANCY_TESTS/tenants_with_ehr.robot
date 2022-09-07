@@ -17,7 +17,7 @@
 
 *** Settings ***
 Documentation   Multitenancy With EHRs Tests
-...             Precondition: tenants_operations.robot suite is executed. Tenants are created there.
+...             \n*Precondition:* tenants_operations.robot suite is executed. Tenants are created there.
 
 Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/ehr_keywords.robot

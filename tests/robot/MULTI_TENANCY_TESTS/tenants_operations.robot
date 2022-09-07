@@ -24,6 +24,9 @@ Resource        ../_resources/keywords/multitenancy_keywords.robot
 
 *** Test Cases ***
 Create Non Default Tenants And Get All Tenants
+    [Documentation]     Create 2 tenants and expect them to appear at Get All tenants.
+    ...         \nCreate duplicate tenants (with the same tenantId) - must be rejected.
+    [Tags]      Positive
     ${tnt1}     Create Single Tenant
     ...     encodedToken=${encoded_token_1}      tenantName=MyTenant1
     ${tnt2}     Create Single Tenant
