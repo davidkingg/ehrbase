@@ -34,7 +34,7 @@ ${noCompositionFoundMsg}   No composition with given ID found
 *** Test Cases ***
 Create Compositions In Tentants And Check Isolation Of Data In Tenants
     [Documentation]     Covers create and get Composition + Isolation of data between tenants.
-    ...         *Case 1:*
+    ...         \n*Case 1:*
     ...         - Create EHR on tenant 1
     ...         - Create Composition on tenant 1
     ...         - Get Composition from tenant 1 and expect 200 code
