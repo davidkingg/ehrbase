@@ -60,6 +60,7 @@ import org.ehrbase.jooq.binding.OtherDetailsJsonbBinder;
 import org.ehrbase.jooq.binding.SysPeriodBinder;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.FolderHierarchy;
+import org.ehrbase.jooq.pg.tables.FolderItems;
 import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderHierarchyRecord;
 import org.ehrbase.jooq.pg.tables.records.FolderHistoryRecord;
