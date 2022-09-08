@@ -19,7 +19,8 @@
 Documentation   Multitenancy With Compositions Tests
 ...             - Precondition: tenants_operations.robot suite is executed.
 ...             - Tenants are created in tenants_operations.robot.
-
+...             \n*Following operations on Compositions were covered:*
+...             - Create\n- Update\n- Delete\n- Get
 Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/ehr_keywords.robot
 Resource        ../_resources/keywords/multitenancy_keywords.robot
@@ -140,6 +141,53 @@ Create And Update Compositions In Tentants And Check Isolation Of Data Between T
     get composition by composition_uid    ${versioned_object_uid_v2}    multitenancy_token=${encoded_token_1}
     Should Be Equal As Strings      ${response.status_code}     ${getCompositionNegativeCode}
     Should Be Equal As Strings      ${response.json()['message']}   ${noCompositionFoundMsg}
+
+Create And Delete Compositions In Tentants And Check Isolation Of Data Between Tenants
+    [Documentation]     Covers create and delete Composition + Isolation of data between tenants.
+    ...         \n*Case 1:*
+    ...         - Create EHR on tenant 1
+    ...         - Create Composition on tenant 1
+    ...         - Delete Composition from tenant 1
+    ...         - Get deleted Composition from tenant 1 and expect 204 code
+    ...         - Get Composition from tenant 2, deleted in tenant 1 and expect 404 code Not Found.
+    ...         \n*Case 2:*
+    ...         - Create EHR on tenant 2
+    ...         - Create Composition on tenant 2
+    ...         - Delete Composition from tenant 2
+    ...         - Get deleted Composition from tenant 2 and expect 204 code
+    ...         - Get Composition from tenant 1, deleted in tenant 2 and expect 404 code Not Found.
+    [Tags]      Positive    Negative
+    [Setup]     Upload OPT    nested/nested.opt
+    ## Create EHR and Composition + Delete Composition in tenant1 (positive)
+    Create New EHR With Multitenant Token       ${encoded_token_1}
+    Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
+    Set Suite Variable    ${ehr_id}        ${response.json()['ehr_id']['value']}
+    commit composition  format=CANONICAL_JSON
+    ...                 composition=nested.en.v1__full_without_links.json
+    ...                 multitenancy_token=${encoded_token_1}
+    Should Be Equal As Strings      ${response.status_code}     201
+    Get Composition Values And Set Them In Variables
+    delete composition    ${preceding_version_uid}
+    get composition by composition_uid    ${preceding_version_uid}    multitenancy_token=${encoded_token_1}
+    Should Be Equal As Strings      ${response.status_code}     204
+    #Get composition from tenant2, deleted in tenant1 (negative)
+    get composition by composition_uid    ${preceding_version_uid}    multitenancy_token=${encoded_token_2}
+    Should Be Equal As Strings      ${response.status_code}     ${getCompositionNegativeCode}
+    ## Create EHR and Composition + Delete Composition in tenant2 (positive)
+    Create New EHR With Multitenant Token       ${encoded_token_2}
+    Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
+    Set Suite Variable    ${ehr_id}        ${response.json()['ehr_id']['value']}
+    commit composition  format=CANONICAL_JSON
+    ...                 composition=nested.en.v1__full_without_links.json
+    ...                 multitenancy_token=${encoded_token_2}
+    Should Be Equal As Strings      ${response.status_code}     201
+    Get Composition Values And Set Them In Variables
+    delete composition    ${preceding_version_uid}
+    get composition by composition_uid    ${preceding_version_uid}    multitenancy_token=${encoded_token_2}
+    Should Be Equal As Strings      ${response.status_code}     204
+    #Get composition from tenant1, deleted in tenant2 (negative)
+    get composition by composition_uid    ${preceding_version_uid}    multitenancy_token=${encoded_token_1}
+    Should Be Equal As Strings      ${response.status_code}     ${getCompositionNegativeCode}
 
 
 *** Keywords ***

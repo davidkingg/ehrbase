@@ -1140,7 +1140,7 @@ check versioned composition does not exist
 
 
 delete composition
-    [Arguments]         ${uid}      ${ehrScape}=false
+    [Arguments]         ${uid}      ${ehrScape}=false       ${multitenancy_token}=${None}
     [Documentation]     :uid: preceding_version_uid (format of version_uid)
 
     IF      '${ehrScape}' == 'false'
