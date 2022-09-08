@@ -19,8 +19,7 @@
 Documentation   Multitenancy With Compositions Tests
 ...             - Precondition: tenants_operations.robot suite is executed.
 ...             - Tenants are created in tenants_operations.robot.
-...             \n*Following operations on Compositions were covered:*
-...             - Create\n- Update\n- Delete\n- Get
+...             \n*Following operations on Compositions were covered:*\n- Create\n- Update\n- Delete\n- Get
 Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/ehr_keywords.robot
 Resource        ../_resources/keywords/multitenancy_keywords.robot
@@ -29,28 +28,22 @@ Resource        ../_resources/keywords/multitenancy_keywords.robot
 *** Variables ***
 ${getCompositionPositiveCode}   200
 ${getCompositionNegativeCode}   404
-${noCompositionFoundMsg}   No composition with given ID found
+${noCompositionFoundMsg}        No composition with given ID found
 
 
 *** Test Cases ***
 Create And Get Compositions In Tentants And Check Isolation Of Data Between Tenants
     [Documentation]     Covers create and get Composition + Isolation of data between tenants.
     ...         \n*Case 1:*
-    ...         - Create EHR on tenant 1
-    ...         - Create Composition on tenant 1
+    ...         - Create EHR on tenant 1\n- Create Composition on tenant 1
     ...         - Get Composition from tenant 1 and expect 200 code
     ...         - Get Composition created in tenant 1, from tenant 2 and expect 404 Not Found.
     ...         *Case 2:*
-    ...         - Create EHR on tenant 2
-    ...         - Create Composition on tenant 2
+    ...         - Create EHR on tenant 2\n- Create Composition on tenant 2
     ...         - Get Composition from tenant 2 and expect 200 code
     ...         - Get Composition created in tenant 2, from tenant 1 and expect 404 Not Found.
     [Tags]      Positive    Negative
     [Setup]     Upload OPT    nested/nested.opt
-    ${tnt1}     Decode JWT And Get TNT Value    ${encoded_token_1}
-    ${tnt2}     Decode JWT And Get TNT Value    ${encoded_token_2}
-    Set Suite Variable   ${tenantTnt1}     ${tnt1}
-    Set Suite Variable   ${tenantTnt2}     ${tnt2}
     ## Create EHR and Composition in tenant1 (positive)
     Create New EHR With Multitenant Token       ${encoded_token_1}
     Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
@@ -85,23 +78,17 @@ Create And Get Compositions In Tentants And Check Isolation Of Data Between Tena
 Create And Update Compositions In Tentants And Check Isolation Of Data Between Tenants
     [Documentation]     Covers create and update Composition + Isolation of data between tenants.
     ...         \n*Case 1:*
-    ...         - Create EHR on tenant 1
-    ...         - Create Composition on tenant 1
+    ...         - Create EHR on tenant 1\n- Create Composition on tenant 1
     ...         - Get Composition from tenant 1 and expect 200 code
     ...         - Update Composition from tenant 1 and expect 200 code
     ...         - Get Composition created in tenant 1, from tenant 2 and expect 404 Not Found.
     ...         \n*Case 2:*
-    ...         - Create EHR on tenant 2
-    ...         - Create Composition on tenant 2
+    ...         - Create EHR on tenant 2\n- Create Composition on tenant 2
     ...         - Get Composition from tenant 2 and expect 200 code
     ...         - Update Composition from tenant 2 and expect 200 code
     ...         - Get Composition created in tenant 2, from tenant 1 and expect 404 Not Found.
     [Tags]      Positive    Negative
     [Setup]     Upload OPT    nested/nested.opt
-    ${tnt1}     Decode JWT And Get TNT Value    ${encoded_token_1}
-    ${tnt2}     Decode JWT And Get TNT Value    ${encoded_token_2}
-    Set Suite Variable   ${tenantTnt1}     ${tnt1}
-    Set Suite Variable   ${tenantTnt2}     ${tnt2}
     ## Create EHR and Composition + Update Composition in tenant1 (positive)
     Create New EHR With Multitenant Token       ${encoded_token_1}
     Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
@@ -145,15 +132,11 @@ Create And Update Compositions In Tentants And Check Isolation Of Data Between T
 Create And Delete Compositions In Tentants And Check Isolation Of Data Between Tenants
     [Documentation]     Covers create and delete Composition + Isolation of data between tenants.
     ...         \n*Case 1:*
-    ...         - Create EHR on tenant 1
-    ...         - Create Composition on tenant 1
-    ...         - Delete Composition from tenant 1
-    ...         - Get deleted Composition from tenant 1 and expect 204 code
+    ...         - Create EHR on tenant 1\n- Create Composition on tenant 1
+    ...         - Delete Composition from tenant 1\n- Get deleted Composition from tenant 1 and expect 204 code
     ...         - Get Composition from tenant 2, deleted in tenant 1 and expect 404 code Not Found.
     ...         \n*Case 2:*
-    ...         - Create EHR on tenant 2
-    ...         - Create Composition on tenant 2
-    ...         - Delete Composition from tenant 2
+    ...         - Create EHR on tenant 2\n- Create Composition on tenant 2\n- Delete Composition from tenant 2
     ...         - Get deleted Composition from tenant 2 and expect 204 code
     ...         - Get Composition from tenant 1, deleted in tenant 2 and expect 404 code Not Found.
     [Tags]      Positive    Negative

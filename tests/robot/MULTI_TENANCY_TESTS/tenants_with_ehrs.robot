@@ -17,7 +17,7 @@
 
 *** Settings ***
 Documentation   Multitenancy With EHRs Tests
-...             \n*Precondition:* tenants_operations.robot suite is executed. Tenants are created there.
+...             \n*Precondition:* tenants_operations.robot suite is executed where tenants are created.
 
 Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/ehr_keywords.robot
@@ -32,15 +32,11 @@ ${negativeCode}     404
 
 *** Test Cases ***
 Create EHRs In Tentants And Check Isolation Of Data In Tenants - Positive
-    [Documentation]     (Positive cases) Covers creation of:
+    [Documentation]     *Positive cases* Covers creation of:
     ...     - 2 EHRs in Tentant1, Get them and check that 200 is returned
     ...     - 1 EHR in Tentant2, Get it and check that 200 is returned.
     [Tags]      Positive
     [Setup]     Upload OPT    nested/nested.opt
-    ${tnt1}     Decode JWT And Get TNT Value    ${encoded_token_1}
-    ${tnt2}     Decode JWT And Get TNT Value    ${encoded_token_2}
-    Set Suite Variable   ${tenantTnt1}     ${tnt1}
-    Set Suite Variable   ${tenantTnt2}     ${tnt2}
     ## Create 2 EHRs in Tentant1 and Get them from Tentant1
     Create New EHR With Multitenant Token       ${encoded_token_1}
     Retrieve EHR By Ehr_id With Multitenant Token   expected_code=${positiveCode}
@@ -54,9 +50,8 @@ Create EHRs In Tentants And Check Isolation Of Data In Tenants - Positive
     Set Suite Variable    ${ehr_id1_tnt2}        ${response.json()['ehr_id']['value']}
 
 Create EHRs In Tentants And Check Isolation Of Data In Tenants - Negative
-    [Documentation]     (Negative cases) Covers:
-    ...     - Get EHR created in tentant2 being under tentant1
-    ...     - Get EHR created in tentant1 being under tentant2
+    [Documentation]     *Negative cases* Covers:
+    ...     - Get EHR created in tentant2 being under tentant1\n- Get EHR created in tentant1 being under tentant2
     [Tags]      Negative
     ## Get ehr created in tentant2 from tentant1
     Set Test Variable      ${ehr_id}     ${ehr_id1_tnt2}
