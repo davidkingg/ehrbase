@@ -29,6 +29,14 @@ Resource        ../_resources/keywords/multitenancy_keywords.robot
 *** Test Cases ***
 Create And Get Contributions In Tentants And Check Isolation Of Data Between Tenants
     [Documentation]     Covers create and get Contributions + Isolation of data between tenants.
+    ...         \n*Case 1:*
+    ...         - Create EHR on tenant 1\n- Create Contribution on tenant 1
+    ...         - Get Contribution from tenant 1 and expect 200 code
+    ...         - Get Contribution from tenant 2 and expect 404 code
+    ...         \n*Case 2:*
+    ...         - Create EHR on tenant 2\n- Create Contribution on tenant 2
+    ...         - Get Contribution from tenant 2 and expect 200 code
+    ...         - Get Contribution from tenant 1 and expect 404 code
     [Tags]      Positive    Negative
     [Setup]     Upload OPT  minimal/minimal_evaluation.opt
     Create New EHR With Multitenant Token   ${encoded_token_1}
