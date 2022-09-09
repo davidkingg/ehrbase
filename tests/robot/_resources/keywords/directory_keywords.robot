@@ -565,16 +565,28 @@ DELETE /ehr/ehr_id/directory
     ...                 DEPENDENCY: the following variables in test level scope
     ...                 `\${ehr_id}`, `\${preceding_version_uid}`
 
-    [Arguments]         ${format}
-
+    [Arguments]         ${format}       ${multitenancy_token}=${None}
+    IF  '${multitenancy_token}' == '${None}'
                         prepare new request session    ${format}
-                        ...             If-Match=${preceding_version_uid}
+                        ...     If-Match=${preceding_version_uid}
+    ELSE
+                        # return in JSON format by default
+                        Delete All Sessions
+                        &{headers}     Create Dictionary
+                        ...     Content-Type=application/json
+                        ...     Accept=application/json
+                        ...     If-Match=${preceding_version_uid}
+                        ...     Authorization=Bearer ${multitenancy_token}
+                        Create Session      ${SUT}    ${BASEURL}    debug=2   headers=${headers}
+    END
 
     ${resp}=            Delete On Session   ${SUT}   /ehr/${ehr_id}/directory   expected_status=anything
                         ...                 headers=${headers}
 
                         Set Test Variable   ${response}    ${resp}
-                        Output Debug Info:  DELETE /ehr/ehr_id/directory
+                        IF  '${multitenancy_token}' == '${None}'
+                            Output Debug Info:  DELETE /ehr/ehr_id/directory
+                        END
 
 
 

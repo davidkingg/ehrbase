@@ -40,6 +40,21 @@ Documentation   Multitenancy With Directories Tests
 ...             \n*Negative:*
 ...             - Get Directory created and updated in tenant2 from tenant1
 ...             - Get Directory created and updated in tenant1 from tenant2
+...             \n*3. (CREATE+DELETE Directory) Below cases covers isolation of data between tenants:*
+...             \n*Positive:*
+...             - 3.1 Create EHR on tenant 1\n- 3.2 Create Directory on tenant 1
+...             - 3.3 Get Directory using ehr_id from tenant 1 and expect 200 code
+...             - 3.4 Delete Directory using ehr_id from tenant 1 and expect 204 code
+...             - 3.5 Get Directory using ehr_id from tenant 1 and expect 404 code, Not found
+...             - 3.6 Create EHR on tenant 2\n- 3.7 Create Directory on tenant 2
+...             - 3.8 Get Directory using ehr_id from tenant 2 and expect 200 code
+...             - 3.9 Delete Directory using ehr_id from tenant 2 and expect 204 code
+...             - 3.10 Get Directory using ehr_id from tenant 2 and expect 404 code, Not found
+...             \n*Negative:*
+...             - Get Directory from tenant 2, deleted in tenant 1
+...             - Get Directory from tenant 1, deleted in tenant 2
+...             - Get Directory from tenant 1, with Tenant Id from tenant 2, deleted in tenant 2
+...             - Get Directory from tenant 2, with Tenant Id from tenant 1, deleted in tenant 1
 
 Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/ehr_keywords.robot
@@ -124,6 +139,52 @@ Negative Get Directory Created And Updated In Tenant1 From Tenant2
     Should Be Equal As Strings      ${response.status_code}     404
     Should Be Equal As Strings      ${response.json()["message"]}     EHR with id ${ehr_id} not found
 
+3. Positive Delete Directories From Tenant1 And Tenant2
+    [Tags]      Positive
+    Create And Delete Directory On Specific Tenant      multitenancy_token=${encoded_token_1}
+    Set Suite Variable      ${version_uid_tnt1}     ${preceding_version_uid}
+    Set Suite Variable      ${ehr_id_tnt1}          ${ehr_id}
+    ###
+    Create And Delete Directory On Specific Tenant      multitenancy_token=${encoded_token_2}
+    Set Suite Variable      ${version_uid_tnt2}     ${preceding_version_uid}
+    Set Suite Variable      ${ehr_id_tnt2}          ${ehr_id}
+
+Negative Get Directory From Tenant2 - Deleted In Tenant1
+    [Documentation]     *DEPENDENT OF* 3. Positive Delete Directories From Tenant1 And Tenant2
+    [Tags]      Negative
+    Set Suite Variable      ${version_uid}      ${version_uid_tnt1}
+    Set Suite Variable      ${ehr_id}           ${ehr_id_tnt1}
+    GET /ehr/ehr_id/directory/version_uid   format=JSON     multitenancy_token=${encoded_token_2}
+    Should Be Equal As Strings      ${response.status_code}     404
+    Should Be Equal As Strings      ${response.json()["message"]}     EHR with id ${ehr_id} not found
+
+Negative Get Directory From Tenant1 - Deleted In Tenant2
+    [Documentation]     *DEPENDENT OF* 3. Positive Delete Directories From Tenant1 And Tenant2
+    [Tags]      Negative
+    Set Suite Variable      ${version_uid}      ${version_uid_tnt2}
+    Set Suite Variable      ${ehr_id}           ${ehr_id_tnt2}
+    GET /ehr/ehr_id/directory/version_uid   format=JSON     multitenancy_token=${encoded_token_1}
+    Should Be Equal As Strings      ${response.status_code}     404
+    Should Be Equal As Strings      ${response.json()["message"]}     EHR with id ${ehr_id} not found
+
+Negative Get Directory From Tenant1 - With Tenant Id From Tenant2 - Deleted In Tenant2
+    [Documentation]     *DEPENDENT OF* 3. Positive Delete Directories From Tenant1 And Tenant2
+    [Tags]      Negative
+    Set Suite Variable      ${version_uid}      ${version_uid_tnt2}
+    Set Suite Variable      ${ehr_id}           ${ehr_id_tnt1}
+    GET /ehr/ehr_id/directory/version_uid   format=JSON     multitenancy_token=${encoded_token_1}
+    Should Be Equal As Strings      ${response.status_code}     404
+    Should Contain     ${response.json()["message"]}     No folder found for
+
+Negative Get Directory From Tenant2 - With Tenant Id From Tenant1 - Deleted In Tenant1
+    [Documentation]     *DEPENDENT OF* 3. Positive Delete Directories From Tenant1 And Tenant2
+    [Tags]      Negative
+    Set Suite Variable      ${version_uid}      ${version_uid_tnt1}
+    Set Suite Variable      ${ehr_id}           ${ehr_id_tnt2}
+    GET /ehr/ehr_id/directory/version_uid   format=JSON     multitenancy_token=${encoded_token_2}
+    Should Be Equal As Strings      ${response.status_code}     404
+    Should Contain     ${response.json()["message"]}     No folder found for
+
 
 *** Keywords ***
 Get Directory Using Ehr Id Only And Get Version Uid Value From Specific Tenant
@@ -151,3 +212,25 @@ Create And Update Directory On Specific Tenant
     load valid dir test-data-set    ${fileToUpdateDirectory}
     PUT /ehr/ehr_id/directory   JSON    ${multitenancy_token}
     Should Be Equal As Strings      ${response.status_code}     200
+
+Create And Delete Directory On Specific Tenant
+    [Arguments]     ${multitenancy_token}
+    Create New EHR With Multitenant Token       ${multitenancy_token}
+    Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
+    Set Suite Variable      ${ehr_id}           ${response.json()['ehr_id']['value']}
+    #Set Suite Variable      ${ehr_id_tnt1}      ${ehr_id}
+    Create Directory With Multitenant Token     empty_directory.json     multitenancy_token=${multitenancy_token}
+    Should Be Equal As Strings      ${response.status_code}     201
+    Set Suite Variable  ${folder_uid}  ${response.json()['uid']['value']}
+    Set Suite Variable  ${version_uid}  ${response.json()['uid']['value']}
+    Set Suite Variable  ${preceding_version_uid}  ${version_uid}
+    GET /ehr/ehr_id/directory/version_uid   format=JSON     multitenancy_token=${multitenancy_token}
+    Should Be Equal As Strings      ${response.status_code}     200
+    DELETE /ehr/ehr_id/directory    format=JSON     multitenancy_token=${multitenancy_token}
+    Should Be Equal As Strings      ${response.status_code}     204
+    GET /ehr/ehr_id/directory/version_uid   format=JSON     multitenancy_token=${multitenancy_token}
+    Should Be Equal As Strings      ${response.status_code}     404
+    ${version_uid_without_system_id}    Remove String
+    ...     ${preceding_version_uid}    ::${CREATING_SYSTEM_ID}::1
+    Should Be Equal As Strings      ${response.json()["message"]}
+    ...     Folder with id ${version_uid_without_system_id} could not be found
