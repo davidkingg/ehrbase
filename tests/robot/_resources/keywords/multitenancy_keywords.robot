@@ -64,18 +64,23 @@ Create Two Tenants
 Create Single Tenant
     [Documentation]     Create single tenant with encoded_token name provided as argument.
     ...     \nTakes 2 arguments:
-    ...     - encodedToken (mandatory)
-    ...     - tenantName (optional with default value)
+    ...     - encodedToken (mandatory)\n- tenantName (optional with default value)
+    ...     - tenantStructure (optional with default value. If default, tnt and tenantName are present)
     ...     \nReturns tnt value.
-    [Arguments]     ${encodedToken}    ${tenantName}=MyAutomationCustomTenant
+    [Arguments]     ${encodedToken}    ${tenantName}=MyAutomationCustomTenant   ${tenantStructure}=default
     ${tnt}     Decode JWT And Get TNT Value    ${encodedToken}
     Create Session      multitenancy    ${PLUGINURL}    debug=2     verify=True
     ${headers}      Create Dictionary   Content-Type    application/json
-    &{tenant}       Create Dictionary
-    ...     tenantId        ${tnt}
-    ...     tenantName      ${tenantName}
+    IF      """${tenantStructure}""" != """default"""
+        &{tenant}   Set Variable    ${tenantStructure}
+    ELSE
+        &{tenant}       Create Dictionary
+        ...     tenantId        ${tnt}
+        ...     tenantName      ${tenantName}
+    END
     ${resp}     POST On Session     multitenancy   /multi-tenant/service
     ...     expected_status=anything   json=&{tenant}   headers=${headers}
+    Set Suite Variable      ${response}     ${resp}
     ${isCreateSucceeded}    Run Keyword And Return Status
     ...     Should Be Equal As Strings      ${resp.status_code}     200
     # TODO: Change status code after fix from Michael, and validate the error message
