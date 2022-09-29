@@ -58,12 +58,13 @@ ${noCompositionFoundMsg}        No composition with given ID found
 1. Create And Get Compositions In Tentants And Check Isolation Of Data Between Tenants
     [Documentation]     Covers create and get Composition + Isolation of data between tenants.
     [Tags]      Positive    Negative
-    [Setup]     Upload OPT    nested/nested.opt
+    Upload OPT    nested/nested.opt     multitenancy_token=${encoded_token_1}
     Create And Get Composition On Specific Tenant   multitenancy_token=${encoded_token_1}
     ## Get EHR created in tentant1 from tenant2 (negative)
     get composition by composition_uid    ${version_uid}    multitenancy_token=${encoded_token_2}
     Should Be Equal As Strings      ${response.status_code}     ${getCompositionNegativeCode}
     Should Be Equal As Strings      ${response.json()['message']}   ${noCompositionFoundMsg}
+    Upload OPT    nested/nested.opt     multitenancy_token=${encoded_token_2}
     Create And Get Composition On Specific Tenant   multitenancy_token=${encoded_token_2}
     ## Get Compositiom created in tentant2 from tenant1 (negative)
     get composition by composition_uid    ${version_uid}    multitenancy_token=${encoded_token_1}
@@ -73,12 +74,13 @@ ${noCompositionFoundMsg}        No composition with given ID found
 2. Create And Update Compositions In Tentants And Check Isolation Of Data Between Tenants
     [Documentation]     Covers create and update Composition + Isolation of data between tenants.
     [Tags]      Positive    Negative
-    [Setup]     Upload OPT    nested/nested.opt
+    Upload OPT    nested/nested.opt     multitenancy_token=${encoded_token_1}
     Create And Update Composition On Specific Tenant    multitenancy_token=${encoded_token_1}
     ## Get Composition created and updated in tentant1 from tenant2 (negative)
     get composition by composition_uid    ${versioned_object_uid_v2}    multitenancy_token=${encoded_token_2}
     Should Be Equal As Strings      ${response.status_code}     ${getCompositionNegativeCode}
     Should Be Equal As Strings      ${response.json()['message']}   ${noCompositionFoundMsg}
+    Upload OPT    nested/nested.opt     multitenancy_token=${encoded_token_2}
     Create And Update Composition On Specific Tenant    multitenancy_token=${encoded_token_2}
     ## Get Composition created and updated in tentant2 from tenant1 (negative)
     get composition by composition_uid    ${versioned_object_uid_v2}    multitenancy_token=${encoded_token_1}
@@ -88,11 +90,12 @@ ${noCompositionFoundMsg}        No composition with given ID found
 3. Create And Delete Compositions In Tentants And Check Isolation Of Data Between Tenants
     [Documentation]     Covers create and delete Composition + Isolation of data between tenants.
     [Tags]      Positive    Negative
-    [Setup]     Upload OPT    nested/nested.opt
+    Upload OPT    nested/nested.opt     multitenancy_token=${encoded_token_1}
     Create And Delete Composition On Specific Tenant    multitenancy_token=${encoded_token_1}
     #Get composition from tenant2, deleted in tenant1 (negative)
     get composition by composition_uid    ${preceding_version_uid}    multitenancy_token=${encoded_token_2}
     Should Be Equal As Strings      ${response.status_code}     ${getCompositionNegativeCode}
+    Upload OPT    nested/nested.opt     multitenancy_token=${encoded_token_2}
     Create And Delete Composition On Specific Tenant    multitenancy_token=${encoded_token_2}
     #Get composition from tenant1, deleted in tenant2 (negative)
     get composition by composition_uid    ${preceding_version_uid}    multitenancy_token=${encoded_token_1}

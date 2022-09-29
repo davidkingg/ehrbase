@@ -38,7 +38,7 @@ Create And Get Contributions In Tentants And Check Isolation Of Data Between Ten
     ...         - Get Contribution from tenant 2 and expect 200 code
     ...         - Get Contribution from tenant 1 and expect 404 code
     [Tags]      Positive    Negative
-    [Setup]     Upload OPT  minimal/minimal_evaluation.opt
+    Upload OPT      minimal/minimal_evaluation.opt     multitenancy_token=${encoded_token_1}
     Create New EHR With Multitenant Token   ${encoded_token_1}
     Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
     Set Suite Variable      ${ehr_id}       ${response.json()['ehr_id']['value']}
@@ -52,6 +52,7 @@ Create And Get Contributions In Tentants And Check Isolation Of Data Between Ten
     Retrieve Contribution With Multitenant Token    multitenancy_token=${encoded_token_2}
     Should Be Equal As Strings      ${response.status_code}     404
     #########
+    Upload OPT      minimal/minimal_evaluation.opt     multitenancy_token=${encoded_token_2}
     Create New EHR With Multitenant Token   ${encoded_token_2}
     Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
     Set Suite Variable      ${ehr_id}       ${response.json()['ehr_id']['value']}

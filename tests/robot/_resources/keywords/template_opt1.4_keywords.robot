@@ -98,7 +98,7 @@ upload OPT file
     Set Suite Variable    ${response}    ${None}
     ${resp}=            POST On Session      ${SUT}    /definition/template/adl1.4   expected_status=anything
                         ...                  data=${file}    headers=${headers}
-                        Set Suite Variable    ${response}    ${resp}
+                        Set Test Variable    ${response}    ${resp}
 
                         # Log To Console      ${resp.content}
 
