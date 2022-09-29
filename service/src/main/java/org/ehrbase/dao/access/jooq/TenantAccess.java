@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.tenant.Tenant;
 import org.ehrbase.dao.access.interfaces.I_TenantAccess;
 import org.ehrbase.jooq.pg.Tables;
@@ -15,35 +16,35 @@ import org.jooq.Result;
 
 public class TenantAccess implements I_TenantAccess {
   private final TenantRecord record;
-  
+
   public TenantAccess(DSLContext ctx, Tenant tenant) {
     this(ctx, initTenantRec(ctx, tenant));
   }
-  
+
   private TenantAccess(DSLContext ctx, TenantRecord rec) {
     this.record = rec;
   }
-  
+
   private static TenantRecord initTenantRec(DSLContext ctx, Tenant tenant) {
     TenantRecord rec = ctx.newRecord(Tables.TENANT);
       rec.setTenantId(tenant.getTenantId());
       rec.setTenantName(tenant.getTenantName());
     return rec;
   }
-  
+
   @Override
   public UUID commit() {
     record.store();
     return record.getId();
   }
-  
+
   public static List<I_TenantAccess> getAll(DSLContext ctx) {
     Result<TenantRecord> allRecs = ctx.fetch(Tables.TENANT);
     return StreamSupport.stream(allRecs.spliterator(), false)
       .map(rec -> new TenantAccess(ctx, rec))
       .collect(Collectors.toList());
   }
-  
+
   public static I_TenantAccess retrieveInstanceBy(DSLContext ctx, String tenantId) {
     return Optional.ofNullable(ctx.fetchOne(Tables.TENANT, Tables.TENANT.TENANT_ID.eq(tenantId)))
       .map(rec -> new TenantAccess(ctx, rec))
@@ -56,5 +57,16 @@ public class TenantAccess implements I_TenantAccess {
       public String getTenantId() { return record.getTenantId(); }
       public String getTenantName() { return record.getTenantName(); }
     };
+  }
+
+  private static final String ERR_TENANT_ID = "Updateing tenant id[%s] is not allowed";
+
+  public Tenant update(Tenant tenant) {
+    if(!record.getTenantId().equals(tenant.getTenantId()))
+      new InternalServerException(String.format(ERR_TENANT_ID, tenant.getTenantId()));
+
+    record.setTenantName(tenant.getTenantName());
+    record.update();
+    return convert();
   }
 }
