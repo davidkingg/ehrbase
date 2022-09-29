@@ -43,7 +43,9 @@ public interface I_TenantAccess {
     return TenantAccess.retrieveInstanceBy(ctx, tenantId);
   }
 
+  public Tenant update(Tenant tenant);
+
   public UUID commit();
-  
+
   public Tenant convert();
 }

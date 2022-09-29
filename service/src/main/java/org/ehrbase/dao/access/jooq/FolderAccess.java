@@ -195,6 +195,8 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
 
     boolean result;
 
+    UUID oldFolderId = getFolderId();
+
     // Set new Contribution for MODIFY
     this.setInContribution(newContribution);
 
@@ -251,6 +253,13 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     }
     // Get new folder id for folder items and hierarchy
     UUID updatedFolderId = this.folderRecord.getId();
+
+    // delete old
+    getDataAccess()
+            .getContext()
+            .delete(FolderItems.FOLDER_ITEMS)
+            .where(FolderItems.FOLDER_ITEMS.FOLDER_ID.eq(oldFolderId))
+            .execute();
 
     // Update items -> Save new list of all items in this folder
     this.saveFolderItems(updatedFolderId, oldContribution, newContribution, transactionTime, getContext(), getFolderRecord().getNamespace());
@@ -527,7 +536,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
   public int delete(LocalDateTime timestamp, UUID systemId, UUID committerId, String description) {
     // create new contribution for this deletion action (with embedded
     // contribution.audit handling), overwrite old contribution with new one
-    contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), contributionAccess.getEhrId(), getFolderRecord().getNamespace()); 
+    contributionAccess = I_ContributionAccess.getInstance(getDataAccess(), contributionAccess.getEhrId(), getFolderRecord().getNamespace());
     var contribution = contributionAccess.commit(TransactionTime.millis(), committerId, systemId, null,
         ContributionDef.ContributionState.COMPLETE, I_ConceptAccess.ContributionChangeType.DELETED, description);
 
@@ -692,7 +701,7 @@ public class FolderAccess extends DataAccess implements I_FolderAccess, Comparab
     UUID contributionId = folderRecord.get(org.ehrbase.jooq.pg.tables.Folder.FOLDER.IN_CONTRIBUTION);
 
     String tenantIdentifier = folderRecord.get(org.ehrbase.jooq.pg.tables.Folder.FOLDER.NAMESPACE);
-    
+
     FolderAccess folderAccess = new FolderAccess(domainAccess, tenantIdentifier);
     folderAccess.folderRecord = new FolderRecord();
     folderAccess.folderRecord.setNamespace(tenantIdentifier);
