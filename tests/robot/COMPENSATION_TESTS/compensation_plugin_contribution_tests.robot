@@ -73,3 +73,6 @@ Perform Rollback On Non Existing Contribution Using Id
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     should be equal as strings      ${response_code}    ${400}
     should be equal as strings      ${body}             ${EMPTY}
+
+#Create test with empty Contribution, to receive after POST rollback, 200 status code
+#Request for such empty Contribution content.
