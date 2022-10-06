@@ -30,6 +30,7 @@ Perform Rollback On Committed CONTRIBUTION Composition With Change Type And Oper
     ...                 \n Perform Rollback on committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...                 \n Expect status code 501, with JSON body containing uuid, type and "status":" Not Implemented"
+    [Tags]      Negative
     Upload OPT    minimal/minimal_evaluation.opt
     create EHR
     commit CONTRIBUTION (JSON)  minimal/minimal_evaluation.contribution.json
@@ -47,6 +48,7 @@ Perform Rollback On Committed CONTRIBUTION Composition With Change Type And Oper
     ...                 \n Perform Rollback on committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...                 \n Expect status code 501, with JSON body containing uuid, type and "status":" Not Implemented"
+    [Tags]      Negative
     Upload OPT    minimal/minimal_admin.opt
     create EHR
     commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
@@ -66,6 +68,7 @@ Perform Rollback On Non Existing Contribution Using Id
     ...                 \n Perform Rollback on not existing contribution, using not existing contribution_uid,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback,
     ...                 \n Expect status code 400, with JSON body empty.
+    [Tags]      Negative
     create EHR
     commit CONTRIBUTION (JSON)  minimal/minimal_evaluation.contribution.json
     check response: is positive - returns version id
@@ -81,6 +84,7 @@ Perform Rollback On Committed CONTRIBUTION EHRStatus With Operation Modification
     ...                 \n Perform Rollback on committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...                 \n Expect status code 501, with JSON body containing uuid, type and "status":" Not Implemented"
+    [Tags]      Negative
     create EHR
     Set Test Variable  ${version_id}  ${ehrstatus_uid}
     commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/status.contribution.modification.json
@@ -97,6 +101,7 @@ Perform Rollback On Committed CONTRIBUTION Folder With Operation Creation
     ...                 \n Perform Rollback on committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...                 \n Expect status code 501, with JSON body containing uuid, type and "status":" Not Implemented"
+    [Tags]      Negative
     create EHR
     commit CONTRIBUTION (JSON)    minimal/folder.contribution.creation.json
     check response: is positive - returns version id
@@ -113,6 +118,7 @@ Perform Rollback On Committed CONTRIBUTION Folder With Operation Modification
     ...                 \n Perform Rollback on second version of committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...                 \n Expect status code 501, with JSON body containing uuid, type and "status":" Not Implemented"
+    [Tags]      Negative
     create EHR
     commit CONTRIBUTION (JSON)    minimal/folder.contribution.creation.json
     check response: is positive - returns version id
