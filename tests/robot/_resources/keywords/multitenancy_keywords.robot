@@ -81,6 +81,7 @@ Create Single Tenant
     ${resp}     POST On Session     multitenancy   /multi-tenant/service
     ...     expected_status=anything   json=&{tenant}   headers=${headers}
     Set Suite Variable      ${response}     ${resp}
+    Set Suite Variable      ${response_code}     ${resp.status_code}
     ${isCreateSucceeded}    Run Keyword And Return Status
     ...     Should Be Equal As Strings      ${resp.status_code}     200
     # TODO: Change status code after fix from Michael, and validate the error message
@@ -96,3 +97,18 @@ Get All Created Tenants
     ...     expected_status=anything   headers=${headers}
     Should Be Equal As Strings      ${resp.status_code}     200
     Set Test Variable       ${response}     ${resp.text}
+
+Create Tenant Error Handler
+    IF      '${response_code}' == '409'
+        Should Contain      ${response.text}        ${expectedDuplicateErr}
+        Log     \n${response.text}    console=yes
+        Return From Keyword
+    ELSE IF     '${response_code}' == '201'
+        Return From Keyword
+    ELSE IF     '${response_code}' == '400' or '${response.status_code}' == '500'
+        Log     Create Tenant returned ${response_code} code.    console=yes
+        Return From Keyword
+    ELSE
+        Log     Create Tenant returned ${response_code} code.    console=yes
+        Return From Keyword
+    END

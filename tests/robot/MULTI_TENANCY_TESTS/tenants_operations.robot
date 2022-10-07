@@ -21,8 +21,10 @@ Documentation   Multitenancy Tests
 Resource        ../_resources/keywords/composition_keywords.robot
 Resource        ../_resources/keywords/multitenancy_keywords.robot
 
+
 *** Variables ***
 ${expectedDuplicateErr}      duplicate key value violates unique constraint "tenant_tenant_id_key"
+
 
 *** Test Cases ***
 Create Non Default Tenants And Get All Tenants
@@ -92,20 +94,3 @@ Create Non Default Tenant Duplicate Tenant
     Create Tenant Error Handler
     Should Be Equal As Strings     ${response.status_code}      409
     Should Contain      ${response.text}        ${expectedDuplicateErr}
-
-
-*** Keywords ***
-Create Tenant Error Handler
-    IF      '${response.status_code}' == '409'
-        Should Contain      ${response.text}        ${expectedDuplicateErr}
-        Log     \n${response.text}    console=yes
-        Return From Keyword
-    ELSE IF     '${response.status_code}' == '201'
-        Return From Keyword
-    ELSE IF     '${response.status_code}' == '400' or '${response.status_code}' == '500'
-        Log     Create Tenant returned ${response.status_code} code.    console=yes
-        Return From Keyword
-    ELSE
-        Log     Create Tenant returned ${response.status_code} code.    console=yes
-        Return From Keyword
-    END

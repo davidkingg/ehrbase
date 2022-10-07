@@ -283,12 +283,19 @@ POST /ehr/ehr_id/contribution
 
 
 POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    [Arguments]         ${new_contribution_id}=${None}  ${multitenancy_token}=${None}
     &{headers}          Create Dictionary   &{EMPTY}
 
                         Set To Dictionary   ${headers}
                         ...                 Content-Type=application/json
                         ...                 Accept=application/json
                         ...                 &{authorization}
+                        IF  '${multitenancy_token}' != '${None}'
+                            Set To Dictionary   ${headers}  Authorization=Bearer ${multitenancy_token}
+                        END
+                        IF  '${new_contribution_id}' != '${None}'
+                            Set Suite Variable  ${contribution_uid}     ${new_contribution_id}
+                        END
     &{headers}          Set Headers         ${headers}
     Create Session      ${SUT}    ${PLUGIN_URL}    debug=2
                         ...                 headers=${headers}    verify=True
@@ -298,7 +305,6 @@ POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
                         ...                 /transaction-management/ehr/${ehr_id}/contribution/${contribution_uid}/rollback
                         ...                 expected_status=anything
                         ...                 headers=${headers}
-                        #...                 json=${test_data}
                         Set Suite Variable  ${response_code}    ${resp.status_code}
                         Set Suite Variable  ${body}     ${resp.text}
 
