@@ -68,7 +68,7 @@ Create Contribution Under Tenant 1 And Rollback It From Tenant 1
     Set Suite Variable      ${contribution_uid}
 
 Rollback Contribution Created In Tenant 1 From Tenant 2
-    [Documentation]     *Dependent of* Create Contribution Under Tenant 1 And Rollback It From Tenant 1
+    [Documentation]     *Dependent of:* Create Contribution Under Tenant 1 And Rollback It From Tenant 1
     ...             \n Perform Rollback on committed contribution in tenant 1 from tenant 2,
     ...             \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...             \n Expect status code 400, with empty body
@@ -102,7 +102,7 @@ Create Contribution Under Tenant 2 And Rollback It From Tenant 2
     Set Suite Variable      ${contribution_uid}
 
 Rollback Contribution Created In Tenant 2 From Tenant 1
-    [Documentation]     *Dependent of*Create Contribution Under Tenant 2 And Rollback It From Tenant 2
+    [Documentation]     *Dependent of:* Create Contribution Under Tenant 2 And Rollback It From Tenant 2
     ...             \n Perform Rollback on committed contribution in tenant 2 from tenant 1,
     ...             \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...             \n Expect status code 400, with empty body
