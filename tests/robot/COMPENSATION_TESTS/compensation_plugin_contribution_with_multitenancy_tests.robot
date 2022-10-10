@@ -44,6 +44,12 @@ Create Non Default Tenants
     Should Contain      ${response}     ${tnt2}
 
 Create Contribution Under Tenant 1 And Rollback It From Tenant 1
+    [Documentation]     Upload OPT in tenant 1, \n Create EHR in tenant 1,
+    ...             \n Create Contribution in tenant 1,
+    ...             \n Retrieve Contribution from tenant 1 and expect 200 status code,
+    ...             \n Perform Rollback on committed contribution in tenant 1,
+    ...             \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    ...             \n Expect status code 501, with JSON body containing uuid, type and "status":" Not Implemented"
     Upload OPT      minimal/minimal_evaluation.opt     multitenancy_token=${encoded_token_1}
     Create New EHR With Multitenant Token   ${encoded_token_1}
     Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
@@ -55,7 +61,6 @@ Create Contribution Under Tenant 1 And Rollback It From Tenant 1
     Should Be Equal As Strings      ${response.status_code}     ${201}
     Retrieve Contribution With Multitenant Token    multitenancy_token=${encoded_token_1}
     Should Be Equal As Strings      ${response.status_code}     ${200}
-    ### Rollback Contribution created in tenant 1, from tenant 1. Expect 501.
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...     multitenancy_token=${encoded_token_1}
     should be equal as strings      ${response_code}    ${501}
@@ -63,14 +68,22 @@ Create Contribution Under Tenant 1 And Rollback It From Tenant 1
     Set Suite Variable      ${contribution_uid}
 
 Rollback Contribution Created In Tenant 1 From Tenant 2
-    ### Rollback Contribution created in tenant 1, from tenant 2. Expect 400.
+    [Documentation]     *Dependent of* Create Contribution Under Tenant 1 And Rollback It From Tenant 1
+    ...             \n Perform Rollback on committed contribution in tenant 1 from tenant 2,
+    ...             \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    ...             \n Expect status code 400, with empty body
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...     multitenancy_token=${encoded_token_2}
     should be equal as strings      ${response_code}    ${400}
     should be equal as strings      ${body}             ${EMPTY}
-########################
 
 Create Contribution Under Tenant 2 And Rollback It From Tenant 2
+    [Documentation]     Upload OPT in tenant 2, \n Create EHR in tenant 2,
+    ...             \n Create Contribution in tenant 2,
+    ...             \n Retrieve Contribution from tenant 2 and expect 200 status code,
+    ...             \n Perform Rollback on committed contribution in tenant 2,
+    ...             \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    ...             \n Expect status code 501, with JSON body containing uuid, type and "status":" Not Implemented"
     Upload OPT      minimal/minimal_evaluation.opt     multitenancy_token=${encoded_token_2}
     Create New EHR With Multitenant Token   ${encoded_token_2}
     Retrieve EHR By Ehr_id With Multitenant Token   expected_code=200
@@ -82,7 +95,6 @@ Create Contribution Under Tenant 2 And Rollback It From Tenant 2
     Should Be Equal As Strings      ${response.status_code}     ${201}
     Retrieve Contribution With Multitenant Token    multitenancy_token=${encoded_token_2}
     Should Be Equal As Strings      ${response.status_code}     ${200}
-    ### Rollback Contribution created in tenant 2, from tenant 2. Expect 501.
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...     multitenancy_token=${encoded_token_2}
     should be equal as strings      ${response_code}    ${501}
@@ -90,7 +102,10 @@ Create Contribution Under Tenant 2 And Rollback It From Tenant 2
     Set Suite Variable      ${contribution_uid}
 
 Rollback Contribution Created In Tenant 2 From Tenant 1
-    ### Rollback Contribution created in tenant 2, from tenant 1. Expect 400.
+    [Documentation]     *Dependent of*Create Contribution Under Tenant 2 And Rollback It From Tenant 2
+    ...             \n Perform Rollback on committed contribution in tenant 2 from tenant 1,
+    ...             \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    ...             \n Expect status code 400, with empty body
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...     multitenancy_token=${encoded_token_1}
     should be equal as strings      ${response_code}    ${400}
