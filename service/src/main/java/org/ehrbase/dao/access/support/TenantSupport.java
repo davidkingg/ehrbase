@@ -14,9 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 public final class TenantSupport {
   private static final Logger LOGGER = LoggerFactory.getLogger(TenantSupport.class);
-
+  
   private static final String WARN_NOT_TENEANT_IDENT = "No tenent identifier provided, falling back to default tenant identifier {}";
-
+  
   public static String currentTenantIdentifier() {
     return Optional
       .ofNullable(SecurityContextHolder.getContext())
@@ -37,12 +37,12 @@ public final class TenantSupport {
         return TenantAuthentication.getDefaultTenantId();
       });
   }
-
+  
   private static final String ERR_TENANT_ID_MISSMATCH = "Provided tenant id[%s] does not match session tenant id[%s]";
-
+  
   public static Try<String, InternalServerException> isValidTenantId(String tenantId, Supplier<String> currentTenant) {
     String currentTenantIdentifier = currentTenant.get();
-
+    
     return currentTenantIdentifier.equals(tenantId)
         ? Try.success(tenantId)
         : Try.failure(new InternalServerException(String.format(ERR_TENANT_ID_MISSMATCH, tenantId, currentTenantIdentifier)));

@@ -39,20 +39,20 @@ public class DefaultTenantAuthentication extends AbstractAuthenticationToken imp
       auth.tenantId = tenantId;
     return auth;
   }
-
+  
   public static <T> DefaultTenantAuthentication ofToken(String token) {
     return new DefaultTenantAuthentication(token);
   }
-
+  
   private String tenantId;
   private DecodedJWT token;
   private String raw;
   private Payload payload;
-
+  
   private DefaultTenantAuthentication() {
     super(null);
   }
-
+  
   private DefaultTenantAuthentication(String token) {
     super(null);
     this.raw = token;
@@ -64,7 +64,7 @@ public class DefaultTenantAuthentication extends AbstractAuthenticationToken imp
   public String getTenantId() {
     return tenantId;
   }
-
+  
   @Override
   public Object getCredentials() {
     return token;

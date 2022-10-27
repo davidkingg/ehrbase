@@ -1216,7 +1216,7 @@ Upload OPT
                         END
 
                         Create Session      ${SUT}    ${BASEURL}    debug=2   headers=${headers}
-    
+
     # Run Keyword If    '${accept-header}'=='XML'    start request session (XML)
 
                         get valid OPT file    ${opt_file}

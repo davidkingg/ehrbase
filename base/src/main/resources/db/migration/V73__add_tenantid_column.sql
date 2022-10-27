@@ -1,6 +1,8 @@
 /*
  * Modifications copyright (C) 2019 Vitasystems GmbH and Hannover Medical School.
+
  * This file is part of Project EHRbase
+
  * Copyright (c) 2015 Christian Chevalley
  * This file is part of Project Ethercis
  *
@@ -119,4 +121,5 @@ UPDATE ehr.event_context_history SET namespace = '1f332a66-0e57-11ed-861d-0242ac
 -- change unique constraint on template_store
 
 ALTER TABLE ehr.template_store DROP CONSTRAINT template_store_template_id_key;
-ALTER TABLE ehr.template_store DROP CONSTRAINT template_store_pkey, ADD PRIMARY KEY(id,template_id, namespace);
+ALTER TABLE ehr.template_store DROP CONSTRAINT template_store_pkey, ADD PRIMARY KEY(id,template_id, namespace); 
+
