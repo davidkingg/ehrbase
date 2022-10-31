@@ -29,7 +29,7 @@ Perform Rollback On Committed CONTRIBUTION Composition With Change Type And Oper
     ...                 \n Commit Contribution Composition with Change Type in it, with operation creation and expect 201 status code,
     ...                 \n Perform Rollback on committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
-    ...                 \n Expect status code 200, with empty body
+    ...                 \n Expect status code 200, with empty body.
     [Tags]      Positive
     Upload OPT    minimal/minimal_evaluation.opt
     create EHR
@@ -47,7 +47,7 @@ Perform Rollback On Committed CONTRIBUTION Composition With Change Type And Oper
     ...                 \n Commit Contribution Composition with Change Type in it, with operation modification and expect 201 status code,
     ...                 \n Perform Rollback on committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
-    ...                 \n Expect status code 200, with empty body
+    ...                 \n Expect status code 200, with empty body.
     [Tags]      Positive
     Upload OPT    minimal/minimal_admin.opt
     create EHR
@@ -61,12 +61,48 @@ Perform Rollback On Committed CONTRIBUTION Composition With Change Type And Oper
     Should Be Equal As Strings     ${body}      ${EMPTY}
     retrieve CONTRIBUTION by contribution_uid (JSON)
 
+Perform Second Rollback On Committed CONTRIBUTION Composition With Change Type And Operation Modification
+    [Documentation]     Create OPT, \n Create EHR,
+    ...                 \n Commit Contribution Composition with Change Type in it, with operation modification and expect 201 status code,
+    ...                 \n Perform Rollback on committed contribution,
+    ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    ...                 \n Expect status code 200, with empty body from first Rollback
+    ...                 \n Perform second Rollback on contribution and expect status code 409.
+    ...                 \n 409 is returned, as a newer version of the composition already exists.
+    [Tags]      Negative
+    Upload OPT    minimal/minimal_admin.opt
+    create EHR
+    commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
+    check response: is positive - returns version id
+    commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.modification.complete.json
+    check response: is positive - contribution has new version
+    POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    should be equal as strings      ${response_code}    ${200}
+    Log     ${contribution_uid}
+    Should Be Equal As Strings     ${body}      ${EMPTY}
+    retrieve CONTRIBUTION by contribution_uid (JSON)
+    POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    should be equal as strings      ${response_code}    ${409}
+    Should Contain      ${body}     Stale Version for Composition
+
+#Perform Rollback On Committed CONTRIBUTION Composition With Change Type Deleted
+#    Upload OPT    minimal/minimal_admin.opt
+#    create EHR
+#    commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
+#    check response: is positive - returns version id
+#    commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.deleted.deleted.json
+#    check response: is positive - contribution has new version
+#    check change_type of new version is    deleted
+#    retrieve CONTRIBUTION by contribution_uid (JSON)
+#    POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+#    should be equal as strings      ${response_code}    ${200}
+
 Perform Rollback On Committed CONTRIBUTION EHRStatus With Operation Modification
     [Documentation]     Create EHR,
     ...                 \n Commit Contribution EHR_Status with operation creation and expect 201 status code,
     ...                 \n Perform Rollback on committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
-    ...                 \n Expect status code 200, empty body
+    ...                 \n Expect status code 200, empty body.
     [Tags]      Positive
     create EHR
     Set Test Variable  ${version_id}  ${ehrstatus_uid}
@@ -82,7 +118,7 @@ Perform Rollback On Committed CONTRIBUTION Folder With Operation Creation
     ...                 \n Commit Contribution Folder with operation creation and expect 201 status code,
     ...                 \n Perform Rollback on committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
-    ...                 \n Expect status code 200, empty body
+    ...                 \n Expect status code 200, empty body.
     [Tags]      Positive
     create EHR
     commit CONTRIBUTION (JSON)    minimal/folder.contribution.creation.json
@@ -98,7 +134,7 @@ Perform Rollback On Committed CONTRIBUTION Folder With Operation Modification
     ...                 \n Commit Contribution Folder with preceding_version_uid with operation modification and expect 201 status code,
     ...                 \n Perform Rollback on second version of committed contribution,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
-    ...                 \n Expect status code 200, with empty body
+    ...                 \n Expect status code 200, with empty body.
     [Tags]      Positive
     create EHR
     commit CONTRIBUTION (JSON)    minimal/folder.contribution.creation.json
