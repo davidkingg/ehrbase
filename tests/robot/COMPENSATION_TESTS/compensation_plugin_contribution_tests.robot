@@ -61,6 +61,44 @@ Perform Rollback On Committed CONTRIBUTION Composition With Change Type And Oper
     Should Be Equal As Strings     ${body}      ${EMPTY}
     retrieve CONTRIBUTION by contribution_uid (JSON)
 
+Perform Rollback On Committed CONTRIBUTION Composition With Change Type And Operation Amendment Complete
+    [Documentation]     Create OPT, \n Create EHR,
+    ...                 \n Commit Contribution Composition with Change Type in it, with operation amendment complete and expect 201 status code,
+    ...                 \n Perform Rollback on committed contribution,
+    ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    ...                 \n Expect status code 200, with empty body.
+    [Tags]      Positive
+    Upload OPT    minimal/minimal_admin.opt
+    create EHR
+    commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
+    check response: is positive - returns version id
+    commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.amendment.complete.json
+    check response: is positive - contribution has new version
+    POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    should be equal as strings      ${response_code}    ${200}
+    Log     ${contribution_uid}
+    Should Be Equal As Strings     ${body}      ${EMPTY}
+    retrieve CONTRIBUTION by contribution_uid (JSON)
+
+Perform Rollback On Committed CONTRIBUTION Composition With Change Type And Operation Amendment Incomplete
+    [Documentation]     Create OPT, \n Create EHR,
+    ...                 \n Commit Contribution Composition with Change Type in it, with operation amendment incomplete and expect 201 status code,
+    ...                 \n Perform Rollback on committed contribution,
+    ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    ...                 \n Expect status code 200, with empty body.
+    [Tags]      Positive
+    Upload OPT    minimal/minimal_admin.opt
+    create EHR
+    commit CONTRIBUTION (JSON)    minimal/minimal_admin.contribution.json
+    check response: is positive - returns version id
+    commit CONTRIBUTION - with preceding_version_uid (JSON)    minimal/minimal_admin.contribution.amendment.incomplete.json
+    check response: is positive - contribution has new version
+    POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
+    should be equal as strings      ${response_code}    ${200}
+    Log     ${contribution_uid}
+    Should Be Equal As Strings     ${body}      ${EMPTY}
+    retrieve CONTRIBUTION by contribution_uid (JSON)
+
 Perform Second Rollback On Committed CONTRIBUTION Composition With Change Type And Operation Modification
     [Documentation]     Create OPT, \n Create EHR,
     ...                 \n Commit Contribution Composition with Change Type in it, with operation modification and expect 201 status code,
