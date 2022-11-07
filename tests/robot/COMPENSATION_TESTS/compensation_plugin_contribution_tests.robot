@@ -107,7 +107,7 @@ Perform Second Rollback On Committed CONTRIBUTION Composition With Change Type A
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...                 \n Expect status code 200, with non empty body from first Rollback
     ...                 \n Perform second Rollback on contribution and expect status code 409.
-    ...                 \n 409 is returned, as a newer version of the composition already exists.
+    ...                 \n 404 is returned, as second contribution rollback is not possible.
     [Tags]      Negative
     Upload OPT    minimal/minimal_admin.opt
     create EHR
@@ -121,8 +121,8 @@ Perform Second Rollback On Committed CONTRIBUTION Composition With Change Type A
     Should Contain     ${body}      "status":"Ok","type":"COMPOSITION","uuid":"
     retrieve CONTRIBUTION by contribution_uid (JSON)
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
-    should be equal as strings      ${response_code}    ${409}
-    Should Contain      ${body}     Stale Version for Composition
+    should be equal as strings      ${response_code}    ${404}
+    should be equal as strings      ${body}     Contribution with given ID does not exist
 
 Perform Rollback On Committed CONTRIBUTION EHRStatus With Operation Modification
     [Documentation]     Create EHR,
@@ -178,7 +178,7 @@ Perform Rollback On Non Existing Contribution Using Id
     ...                 \n Set hardcoded, not existing contribution_uid,
     ...                 \n Perform Rollback on not existing contribution, using not existing contribution_uid,
     ...                 \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback,
-    ...                 \n Expect status code 500, with non body empty.
+    ...                 \n Expect status code 404, as contribution doesn't exist.
     [Tags]      Negative
     create EHR
     commit CONTRIBUTION (JSON)  minimal/minimal_evaluation.contribution.json
@@ -186,7 +186,7 @@ Perform Rollback On Non Existing Contribution Using Id
     ${fake_contribution_uid}    Set Variable    c874e8d9-8cc2-4ce3-981f-111111112dd4
     Set Test Variable      ${contribution_uid}    ${fake_contribution_uid}
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
-    should be equal as strings      ${response_code}    ${500}
+    should be equal as strings      ${response_code}    ${404}
     should be equal as strings      ${body}             Contribution with given ID does not exist
 
 Perform Rollback On Committed CONTRIBUTION Composition - Contribution ID Took using SQL - Expect 501
@@ -212,5 +212,6 @@ Perform Rollback On Committed CONTRIBUTION Composition - Contribution ID Took us
     Set Test Variable        ${contribution_uid}    ${output}[0][0]
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     should be equal as strings      ${response_code}    ${501}
-    should not be equal as strings      ${body}    []
+    Should Contain      ${body}     "status":"Not Implemented","type":"EHR_STATUS","uuid":"
+    Should Contain      ${body}     "message":"Compensation of CREATE EHR_STATUS not Supported"
     [Teardown]      Disconnect From Database

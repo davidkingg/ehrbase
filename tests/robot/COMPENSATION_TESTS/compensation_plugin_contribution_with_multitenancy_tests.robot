@@ -71,10 +71,10 @@ Rollback Contribution Created In Tenant 1 From Tenant 2
     [Documentation]     *Dependent of:* Create Contribution Under Tenant 1 And Rollback It From Tenant 1
     ...             \n Perform Rollback on committed contribution in tenant 1 from tenant 2,
     ...             \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
-    ...             \n Expect status code 500, with empty body
+    ...             \n Expect status code 404, with non empty body
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...     multitenancy_token=${encoded_token_2}
-    should be equal as strings      ${response_code}    ${500}
+    should be equal as strings      ${response_code}    ${404}
     #should be equal as strings      ${body}             ${EMPTY}
 
 Create Contribution Under Tenant 2 And Rollback It From Tenant 2
@@ -105,8 +105,8 @@ Rollback Contribution Created In Tenant 2 From Tenant 1
     [Documentation]     *Dependent of:* Create Contribution Under Tenant 2 And Rollback It From Tenant 2
     ...             \n Perform Rollback on committed contribution in tenant 2 from tenant 1,
     ...             \n *ENDPOINT*: plugin/transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
-    ...             \n Expect status code 500, with empty body
+    ...             \n Expect status code 404, with non empty body
     POST transaction-management/ehr/ehr_id/contribution/contribution_id/rollback
     ...     multitenancy_token=${encoded_token_1}
-    should be equal as strings      ${response_code}    ${500}
+    should be equal as strings      ${response_code}    ${404}
     #should be equal as strings      ${body}             ${EMPTY}
