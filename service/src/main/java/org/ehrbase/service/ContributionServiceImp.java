@@ -88,11 +88,19 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     private final FolderService folderService;
 
     enum SupportedClasses {
-        COMPOSITION, EHRSTATUS, FOLDER
+        COMPOSITION,
+        EHRSTATUS,
+        FOLDER
     }
 
     @Autowired
-    public ContributionServiceImp(KnowledgeCacheService knowledgeCacheService, CompositionService compositionService, EhrService ehrService, FolderService folderService, DSLContext context, ServerConfig serverConfig) {
+    public ContributionServiceImp(
+            KnowledgeCacheService knowledgeCacheService,
+            CompositionService compositionService,
+            EhrService ehrService,
+            FolderService folderService,
+            DSLContext context,
+            ServerConfig serverConfig) {
         super(knowledgeCacheService, context, serverConfig);
         this.compositionService = compositionService;
         this.ehrService = ehrService;
@@ -101,7 +109,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
     @Override
     public boolean hasContribution(UUID ehrId, UUID contributionId) {
-        //pre-step: check for valid ehrId
+        // pre-step: check for valid ehrId
         if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
@@ -115,8 +123,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
         }
 
         // doesn't exist on empty result, too
-        if (contributionAccess == null)
-            return false;
+        if (contributionAccess == null) return false;
 
         // with both pre-checks about only checking of contribution is part of EHR is left
         return contributionAccess.getEhrId().equals(ehrId);
@@ -124,11 +131,14 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
     @Override
     public Optional<ContributionDto> getContribution(UUID ehrId, UUID contributionId) {
-        //pre-step: check for valid ehr and contribution ID
+        // pre-step: check for valid ehr and contribution ID
         if (!hasContribution(ehrId, contributionId))
             throw new ObjectNotFoundException("contribution", "Contribution with given ID does not exist");
 
-        ContributionDto contribution = new ContributionDto(contributionId, retrieveUuidsOfContributionObjects(contributionId), retrieveAuditDetails(contributionId));
+        ContributionDto contribution = new ContributionDto(
+                contributionId,
+                retrieveUuidsOfContributionObjects(contributionId),
+                retrieveAuditDetails(contributionId));
 
         return Optional.of(contribution);
     }
@@ -139,7 +149,7 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
         is_modifiable flag. The is_modifiable checks are performed per version in the service responsible for handling the
         versions content*/
 
-        //pre-step: check for valid ehrId
+        // pre-step: check for valid ehrId
         if (!ehrService.hasEhr(ehrId)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
         }
@@ -156,15 +166,19 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
         if (versions.isEmpty())
             throw new InvalidApiParameterException("Invalid Contribution, must have at least one Version object.");
 
-        // go through those RM objects and execute the action of it (as listed in its audit) and connect it to new contribution
+        // go through those RM objects and execute the action of it (as listed in its audit) and connect it to new
+        // contribution
         for (Version version : versions) {
 
             Object versionData = version.getData();
 
-            if (versionData != null) {  // the version contains the optional "data" attribute (i.e. payload), therefore has specific object type (composition, folder,...)
+            if (versionData
+                    != null) { // the version contains the optional "data" attribute (i.e. payload), therefore has
+                // specific object type (composition, folder,...)
                 RMObject versionRmObject;
                 if (versionData instanceof LinkedHashMap) {
-                    versionRmObject = ContributionServiceHelper.unmarshalMapContentToRmObject((LinkedHashMap) versionData, format);
+                    versionRmObject = ContributionServiceHelper.unmarshalMapContentToRmObject(
+                            (LinkedHashMap) versionData, format);
                 } else {
                     throw new IllegalArgumentException("Contribution input can't be processed");
                 }
@@ -172,9 +186,11 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 // switch to allow acting depending on exact type
                 SupportedClasses versionClass;
                 try {
-                    versionClass = SupportedClasses.valueOf(versionRmObject.getClass().getSimpleName().toUpperCase());
+                    versionClass = SupportedClasses.valueOf(
+                            versionRmObject.getClass().getSimpleName().toUpperCase());
                 } catch (Exception e) {
-                    throw new InvalidApiParameterException("Invalid version object in contribution. " + versionRmObject.getClass().getSimpleName().toUpperCase() + " not supported.");
+                    throw new InvalidApiParameterException("Invalid version object in contribution. "
+                            + versionRmObject.getClass().getSimpleName().toUpperCase() + " not supported.");
                 }
                 switch (versionClass) {
                     case COMPOSITION:
@@ -192,9 +208,9 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                         break;
                     default:
                         throw new UnexpectedSwitchCaseException(versionClass);
-
                 }
-            } else {    // version doesn't contain "data", so it is only a metadata one to, for instance, delete a specific object via ID regardless of type
+            } else { // version doesn't contain "data", so it is only a metadata one to, for instance, delete a specific
+                // object via ID regardless of type
                 processMetadataVersion(ehrId, contributionId, version);
             }
         }
@@ -210,46 +226,50 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
      * @param versionRmObject The actual composition payload
      * @throws IllegalArgumentException when input is missing precedingVersionUid in case of modification
      */
-    private void processCompositionVersion(UUID ehrId, UUID contributionId, Version version, Composition versionRmObject) {
+    private void processCompositionVersion(
+            UUID ehrId, UUID contributionId, Version version, Composition versionRmObject) {
         // access audit and extract method, e.g. CREATION
-        I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(version.getCommitAudit().getChangeType().getValue().toUpperCase());
+        I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(
+                version.getCommitAudit().getChangeType().getValue().toUpperCase());
 
-        checkContributionRules(version, changeType);    // evaluate and check contribution rules
+        checkContributionRules(version, changeType); // evaluate and check contribution rules
 
         switch (changeType) {
             case CREATION:
                 // call creation of a new composition with given input
                 compositionService.create(ehrId, versionRmObject, contributionId);
                 break;
-            case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
+            case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use
+                // the type "AMENDMENT" for audit in access layer
             case MODIFICATION:
                 String actualPreceding = getAndCheckActualPreceding(version);
                 // call modification of the given composition
                 compositionService.update(ehrId, new ObjectVersionId(actualPreceding), versionRmObject, contributionId);
                 break;
-            case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
+            case DELETED: // case of deletion change type, but request also has payload (TODO: should that be even
+                // allowed? specification-wise it's not forbidden)
                 String actualPreceding2 = getAndCheckActualPreceding(version);
                 compositionService.delete(ehrId, new ObjectVersionId(actualPreceding2), contributionId);
                 break;
-            case SYNTHESIS:     // TODO
-            case UNKNOWN:       // TODO
-            default:    // TODO keep as long as above has TODOs. Check of valid change type is done in checkContributionRules
+            case SYNTHESIS: // TODO
+            case UNKNOWN: // TODO
+            default: // TODO keep as long as above has TODOs. Check of valid change type is done in
+                // checkContributionRules
                 throw new UnexpectedSwitchCaseException(changeType);
         }
     }
 
     private String getAndCheckActualPreceding(Version version) {
         // preceding_version_uid check
-        Integer latestVersion = compositionService.getLastVersionNumber(getVersionedUidFromVersion(
-            version));
+        Integer latestVersion = compositionService.getLastVersionNumber(getVersionedUidFromVersion(version));
         var id = version.getPrecedingVersionUid().toString();
         // remove version number after "::" and add queried version number to compare with given one
         String actualPreceding = id.substring(0, id.lastIndexOf("::") + 2).concat(latestVersion.toString());
         if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
-            throw new PreconditionFailedException("Given preceding_version_uid for COMPOSITION object does not match latest existing version");
+            throw new PreconditionFailedException(
+                    "Given preceding_version_uid for COMPOSITION object does not match latest existing version");
         return actualPreceding;
     }
-
 
     /**
      * Helper function to process a version of composition type
@@ -261,62 +281,73 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
      */
     private void processEhrStatusVersion(UUID ehrId, UUID contributionId, Version version, EhrStatus versionRmObject) {
         // access audit and extract method, e.g. CREATION
-        I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(version.getCommitAudit().getChangeType().getValue().toUpperCase());
+        I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(
+                version.getCommitAudit().getChangeType().getValue().toUpperCase());
 
-        checkContributionRules(version, changeType);    // evaluate and check contribution rules
+        checkContributionRules(version, changeType); // evaluate and check contribution rules
 
         switch (changeType) {
             case CREATION:
-                // call creation of a new status with given input is not possible as it is linked to and created through an EHR object
+                // call creation of a new status with given input is not possible as it is linked to and created through
+                // an EHR object
                 throw new InvalidApiParameterException("Invalid change type. EHR_STATUS can't be manually created.");
-            case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
+            case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use
+                // the type "AMENDMENT" for audit in access layer
             case MODIFICATION:
                 // preceding_version_uid check
                 String latestVersionUid = ehrService.getLatestVersionUidOfStatus(ehrId);
                 if (!latestVersionUid.equals(version.getPrecedingVersionUid().toString()))
-                    throw new PreconditionFailedException("Given preceding_version_uid for EHR_STATUS object does not match latest existing version");
+                    throw new PreconditionFailedException(
+                            "Given preceding_version_uid for EHR_STATUS object does not match latest existing version");
                 // call modification of the given status
                 ehrService.updateStatus(ehrId, versionRmObject, contributionId);
                 break;
             case DELETED:
                 // deleting a STATUS versioned object is invalid
                 throw new InvalidApiParameterException("Invalid change type. EHR_STATUS can't be deleted.");
-            case SYNTHESIS:     // TODO
-            case UNKNOWN:       // TODO
-            default:    // TODO keep as long as above has TODOs. Check of valid change type is done in checkContributionRules
+            case SYNTHESIS: // TODO
+            case UNKNOWN: // TODO
+            default: // TODO keep as long as above has TODOs. Check of valid change type is done in
+                // checkContributionRules
                 throw new UnexpectedSwitchCaseException(changeType);
         }
     }
 
     private void processFolderVersion(UUID ehrId, UUID contributionId, Version version, Folder versionRmObject) {
         // access audit and extract method, e.g. CREATION
-        I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(version.getCommitAudit().getChangeType().getValue().toUpperCase());
+        I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(
+                version.getCommitAudit().getChangeType().getValue().toUpperCase());
 
-        checkContributionRules(version, changeType);    // evaluate and check contribution rules
+        checkContributionRules(version, changeType); // evaluate and check contribution rules
 
         switch (changeType) {
             case CREATION:
                 // call creation of a new folder version with given input
                 folderService.create(ehrId, versionRmObject, contributionId);
                 break;
-            case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use the type "AMENDMENT" for audit in access layer
+            case AMENDMENT: // triggers the same processing as modification // TODO-396: so far so good, but should use
+                // the type "AMENDMENT" for audit in access layer
             case MODIFICATION:
                 // preceding_version_uid check
                 Integer latestVersion = folderService.getLastVersionNumber(version.getPrecedingVersionUid());
                 String id = version.getPrecedingVersionUid().toString();
                 // remove version number after "::" and add queried version number to compare with given one
-                String actualPreceding = id.substring(0, id.lastIndexOf("::") + 2).concat(latestVersion.toString());
+                String actualPreceding =
+                        id.substring(0, id.lastIndexOf("::") + 2).concat(latestVersion.toString());
                 if (!actualPreceding.equals(version.getPrecedingVersionUid().toString()))
-                    throw new PreconditionFailedException("Given preceding_version_uid for FOLDER object does not match latest existing version");
+                    throw new PreconditionFailedException(
+                            "Given preceding_version_uid for FOLDER object does not match latest existing version");
                 // call modification of the given folder
                 folderService.update(ehrId, version.getPrecedingVersionUid(), versionRmObject, contributionId);
                 break;
-            case DELETED:   // case of deletion change type, but request also has payload (TODO: should that be even allowed? specification-wise it's not forbidden)
+            case DELETED: // case of deletion change type, but request also has payload (TODO: should that be even
+                // allowed? specification-wise it's not forbidden)
                 folderService.delete(ehrId, version.getPrecedingVersionUid(), contributionId);
                 break;
-            case SYNTHESIS:     // TODO
-            case UNKNOWN:       // TODO
-            default:    // TODO keep as long as above has TODOs. Check of valid change type is done in checkContributionRules
+            case SYNTHESIS: // TODO
+            case UNKNOWN: // TODO
+            default: // TODO keep as long as above has TODOs. Check of valid change type is done in
+                // checkContributionRules
                 throw new UnexpectedSwitchCaseException(changeType);
         }
     }
@@ -336,20 +367,22 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
             case CREATION:
                 // can't have change type CREATION and a given "preceding_version_uid"
                 if (version.getPrecedingVersionUid() != null)
-                    throw new InvalidApiParameterException("Invalid version. Change type CREATION, but also set \"preceding_version_uid\" attribute");
+                    throw new InvalidApiParameterException(
+                            "Invalid version. Change type CREATION, but also set \"preceding_version_uid\" attribute");
                 break;
             case MODIFICATION:
             case AMENDMENT:
                 // can't have change type MODIFICATION and without giving "preceding_version_uid"
                 if (version.getPrecedingVersionUid() == null)
-                    throw new InvalidApiParameterException("Invalid version. Change type MODIFICATION, but without \"preceding_version_uid\" attribute");
+                    throw new InvalidApiParameterException(
+                            "Invalid version. Change type MODIFICATION, but without \"preceding_version_uid\" attribute");
                 break;
-            // block of valid change types, without any rules to apply (yet)
+                // block of valid change types, without any rules to apply (yet)
             case DELETED:
             case SYNTHESIS:
             case UNKNOWN:
                 break;
-            // invalid change type
+                // invalid change type
             default:
                 throw new InvalidApiParameterException("Change type \"" + changeType + "\" not valid");
         }
@@ -363,37 +396,54 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
      */
     private void processMetadataVersion(UUID ehrId, UUID contributionId, Version version) {
         // access audit and extract method, e.g. CREATION
-        I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(version.getCommitAudit().getChangeType().getValue().toUpperCase());
+        I_ConceptAccess.ContributionChangeType changeType = I_ConceptAccess.ContributionChangeType.valueOf(
+                version.getCommitAudit().getChangeType().getValue().toUpperCase());
         switch (changeType) {
             case DELETED:
-                // deleting an object without knowing which type it is requires checking of type, here with nested try-catch blocks
+                // deleting an object without knowing which type it is requires checking of type, here with nested
+                // try-catch blocks
                 UUID objectUid = getVersionedUidFromVersion(version);
                 try {
                     // throw exception to signal no matching composition was found
-                    CompositionDto compo = compositionService.retrieve(objectUid, null).orElseThrow(Exception::new);
+                    CompositionDto compo =
+                            compositionService.retrieve(objectUid, null).orElseThrow(Exception::new);
                     String actualPreceding = getAndCheckActualPreceding(version);
                     compositionService.delete(ehrId, new ObjectVersionId(actualPreceding), contributionId);
-                } catch (Exception e) { // given version ID is not of type composition - ignoring the exception because it is expected possible outcome
+                } catch (
+                        Exception
+                                e) { // given version ID is not of type composition - ignoring the exception because it
+                    // is expected possible outcome
                     try {
                         // TODO-396: add folder handling
-                    } catch (Exception ee) { // given version ID is not of type folder - ignoring the exception because it is expected possible outcome
-                        // current end of going through supported types - last step is checking for EHR_STATUS and throwing specific error
+                    } catch (
+                            Exception
+                                    ee) { // given version ID is not of type folder - ignoring the exception because it
+                        // is expected possible outcome
+                        // current end of going through supported types - last step is checking for EHR_STATUS and
+                        // throwing specific error
                         ehrService.getEhrStatus(ehrId).ifPresent(st -> {
                             if (st.getUid().equals(version.getPrecedingVersionUid()))
-                                throw new InvalidApiParameterException("Invalid change type. EHR_STATUS can't be deleted.");
+                                throw new InvalidApiParameterException(
+                                        "Invalid change type. EHR_STATUS can't be deleted.");
                         });
 
-                        // TODO add nested try-catchs for more supported types, for instance folder, when their contribution support gets implemented
-                        // TODO last "try catch" in line needs to rethrow for real, as then no matching object would have been found
-                        throw new ObjectNotFoundException(Composition.class.getName(), "Couldn't find object matching id: " + objectUid); // TODO: type is technically wrong, if more than one type gets tested
+                        // TODO add nested try-catchs for more supported types, for instance folder, when their
+                        // contribution support gets implemented
+                        // TODO last "try catch" in line needs to rethrow for real, as then no matching object would
+                        // have been found
+                        throw new ObjectNotFoundException(
+                                Composition.class.getName(),
+                                "Couldn't find object matching id: "
+                                        + objectUid); // TODO: type is technically wrong, if more than one type gets
+                        // tested
                     }
                 }
                 break;
-            case SYNTHESIS:     // TODO
-            case UNKNOWN:       // TODO
-            case CREATION:      // not expected in a metadata version (i.e. without payload)
-            case MODIFICATION:  // not expected in a metadata version (i.e. without payload)
-            case AMENDMENT:     // not expected in a metadata version (i.e. without payload)
+            case SYNTHESIS: // TODO
+            case UNKNOWN: // TODO
+            case CREATION: // not expected in a metadata version (i.e. without payload)
+            case MODIFICATION: // not expected in a metadata version (i.e. without payload)
+            case AMENDMENT: // not expected in a metadata version (i.e. without payload)
             default:
                 throw new UnexpectedSwitchCaseException(changeType);
         }
@@ -408,10 +458,11 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
      */
     private UUID getVersionedUidFromVersion(Version version) {
         ObjectVersionId precedingVersionUid = version.getPrecedingVersionUid();
-        if(precedingVersionUid == null) {
-            throw new IllegalArgumentException("Input invalid. Composition can't be modified without pointer to precedingVersionUid in Version container.");
+        if (precedingVersionUid == null) {
+            throw new IllegalArgumentException(
+                    "Input invalid. Composition can't be modified without pointer to precedingVersionUid in Version container.");
         }
-        if(precedingVersionUid.toString().split("::").length != 3) {
+        if (precedingVersionUid.toString().split("::").length != 3) {
             throw new IllegalArgumentException("Input invalid. Given precedingVersionUid is not a versionUid.");
         }
 
@@ -429,16 +480,20 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
         Map<String, String> objRefs = new HashMap<>();
 
         // query for compositions   // TODO: refactor to use service layer only!?
-        Map<ObjectVersionId, I_CompositionAccess> compositions = I_CompositionAccess.retrieveInstancesInContribution(this.getDataAccess(), contribution, getServerConfig().getNodename());
-        // for each fetched composition: add it to the return map and add the composition type tag - ignoring the access obj
+        Map<ObjectVersionId, I_CompositionAccess> compositions = I_CompositionAccess.retrieveInstancesInContribution(
+                this.getDataAccess(), contribution, getServerConfig().getNodename());
+        // for each fetched composition: add it to the return map and add the composition type tag - ignoring the access
+        // obj
         compositions.forEach((k, v) -> objRefs.put(k.getValue(), TYPE_COMPOSITION));
 
         // query for statuses       // TODO: refactor to use service layer only!?
-        Map<ObjectVersionId, I_StatusAccess> statuses = I_StatusAccess.retrieveInstanceByContribution(this.getDataAccess(), contribution, getServerConfig().getNodename());
+        Map<ObjectVersionId, I_StatusAccess> statuses = I_StatusAccess.retrieveInstanceByContribution(
+                this.getDataAccess(), contribution, getServerConfig().getNodename());
         statuses.forEach((k, v) -> objRefs.put(k.getValue(), TYPE_EHRSTATUS));
 
         // query for folders        // TODO: refactor to use service layer only!?
-        Set<ObjectVersionId> folders = I_FolderAccess.retrieveFolderVersionIdsInContribution(getDataAccess(), contribution, getServerConfig().getNodename());
+        Set<ObjectVersionId> folders = I_FolderAccess.retrieveFolderVersionIdsInContribution(
+                getDataAccess(), contribution, getServerConfig().getNodename());
         folders.forEach(f -> objRefs.put(f.toString(), TYPE_FOLDER));
 
         return objRefs;
@@ -449,17 +504,26 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
      * @param contributionId ID of contribution
      * @return {@link AuditDetails} object from contribution
      */
-    private AuditDetails retrieveAuditDetails(UUID contributionId){
-        UUID auditId = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId).getHasAuditDetails();
+    private AuditDetails retrieveAuditDetails(UUID contributionId) {
+        UUID auditId = I_ContributionAccess.retrieveInstance(this.getDataAccess(), contributionId)
+                .getHasAuditDetails();
 
-        I_AuditDetailsAccess auditDetailsAccess = new AuditDetailsAccess(this.getDataAccess()).retrieveInstance(this.getDataAccess(), auditId);
+        I_AuditDetailsAccess auditDetailsAccess =
+                new AuditDetailsAccess(this.getDataAccess()).retrieveInstance(this.getDataAccess(), auditId);
 
         String systemId = auditDetailsAccess.getSystemId().toString();
-        PartyProxy committer = new PersistedPartyProxy(this.getDataAccess()).retrieve(auditDetailsAccess.getCommitter());
-        DvDateTime timeCommitted = new DvDateTime(LocalDateTime.ofInstant(auditDetailsAccess.getTimeCommitted().toInstant(), ZoneId.of(auditDetailsAccess.getTimeCommittedTzId())));
-        int changeTypeCode = I_ConceptAccess.ContributionChangeType.valueOf(auditDetailsAccess.getChangeType().getLiteral().toUpperCase()).getCode();
+        PartyProxy committer =
+                new PersistedPartyProxy(this.getDataAccess()).retrieve(auditDetailsAccess.getCommitter());
+        DvDateTime timeCommitted = new DvDateTime(LocalDateTime.ofInstant(
+                auditDetailsAccess.getTimeCommitted().toInstant(),
+                ZoneId.of(auditDetailsAccess.getTimeCommittedTzId())));
+        int changeTypeCode = I_ConceptAccess.ContributionChangeType.valueOf(
+                        auditDetailsAccess.getChangeType().getLiteral().toUpperCase())
+                .getCode();
         // FIXME: what's the terminology ID of the official change type terminology?
-        DvCodedText changeType = new DvCodedText(auditDetailsAccess.getChangeType().getLiteral(), new CodePhrase(new TerminologyId("audit change type"), String.valueOf(changeTypeCode)));
+        DvCodedText changeType = new DvCodedText(
+                auditDetailsAccess.getChangeType().getLiteral(),
+                new CodePhrase(new TerminologyId("audit change type"), String.valueOf(changeTypeCode)));
         DvText description = new DvText(auditDetailsAccess.getDescription());
 
         return new AuditDetails(systemId, committer, timeCommitted, changeType, description);
@@ -468,7 +532,8 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void adminDelete(UUID contributionId) {
-        I_ContributionAccess contributionAccess = I_ContributionAccess.retrieveInstance(getDataAccess(), contributionId);
+        I_ContributionAccess contributionAccess =
+                I_ContributionAccess.retrieveInstance(getDataAccess(), contributionId);
         contributionAccess.adminDelete();
     }
 
@@ -480,12 +545,13 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
 
             Object versionData = version.getData();
 
-            // the version contains the optional "data" attribute (i.e. payload), therefore has specific object type (composition, folder,...)
+            // the version contains the optional "data" attribute (i.e. payload), therefore has specific object type
+            // (composition, folder,...)
             if (versionData != null) {
                 RMObject versionRmObject;
                 if (versionData instanceof LinkedHashMap) {
-                    versionRmObject = ContributionServiceHelper
-                        .unmarshalMapContentToRmObject((LinkedHashMap) versionData, format);
+                    versionRmObject = ContributionServiceHelper.unmarshalMapContentToRmObject(
+                            (LinkedHashMap) versionData, format);
                 } else {
                     throw new IllegalArgumentException("Contribution input can't be processed");
                 }
@@ -493,16 +559,17 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
                 // switch to allow acting depending on exact type
                 SupportedClasses versionClass;
                 try {
-                    versionClass = SupportedClasses
-                        .valueOf(versionRmObject.getClass().getSimpleName().toUpperCase());
+                    versionClass = SupportedClasses.valueOf(
+                            versionRmObject.getClass().getSimpleName().toUpperCase());
                 } catch (Exception e) {
-                    throw new InvalidApiParameterException(
-                        "Invalid version object in contribution. " + versionRmObject.getClass()
-                            .getSimpleName().toUpperCase() + " not supported.");
+                    throw new InvalidApiParameterException("Invalid version object in contribution. "
+                            + versionRmObject.getClass().getSimpleName().toUpperCase() + " not supported.");
                 }
                 switch (versionClass) {
                     case COMPOSITION:
-                        TemplateId templateId = ((Composition) versionRmObject).getArchetypeDetails().getTemplateId();
+                        TemplateId templateId = ((Composition) versionRmObject)
+                                .getArchetypeDetails()
+                                .getTemplateId();
                         if (templateId != null) {
                             templates.add(templateId.getValue());
                         }

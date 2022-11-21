@@ -23,11 +23,10 @@ import com.nedap.archie.json.JacksonUtil;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.generic.AuditDetails;
+import java.util.*;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.serialisation.jsonencoding.CanonicalJson;
-
-import java.util.*;
 
 /**
  * Helper class to collect helper methods for contribution processing.
@@ -40,7 +39,7 @@ public class ContributionServiceHelper {
      * @param format Format of given input
      * @return Map split at first level of input, so access to the version list and audit is directly possible
      */
-    static public Map<String, Object> splitContent(String content, CompositionFormat format) {
+    public static Map<String, Object> splitContent(String content, CompositionFormat format) {
         switch (format) {
             case JSON:
                 return new CanonicalJson().unmarshalToMap(content);
@@ -48,7 +47,6 @@ public class ContributionServiceHelper {
             default:
                 throw new UnexpectedSwitchCaseException(format);
         }
-
     }
 
     /**
@@ -71,10 +69,12 @@ public class ContributionServiceHelper {
                         if (versionRmObject instanceof Version) {
                             versionsList.add((Version) versionRmObject);
                         } else {
-                            throw new IllegalArgumentException("Wrong input. At least one VERSION in this contribution is invalid.");
+                            throw new IllegalArgumentException(
+                                    "Wrong input. At least one VERSION in this contribution is invalid.");
                         }
                     } catch (JsonProcessingException e) {
-                        throw new IllegalArgumentException("Error while processing given json input: " + e.getMessage());
+                        throw new IllegalArgumentException(
+                                "Error while processing given json input: " + e.getMessage());
                     }
                 }
                 break;
@@ -97,7 +97,7 @@ public class ContributionServiceHelper {
         switch (format) {
             case JSON:
                 String json = null;
-                try {   // TODO CONTRIBUTION: round trip ((string->)object->string->object) really necessary?
+                try { // TODO CONTRIBUTION: round trip ((string->)object->string->object) really necessary?
                     json = JacksonUtil.getObjectMapper().writeValueAsString(content);
                 } catch (JsonProcessingException e) {
                     throw new IllegalArgumentException("Error while processing given json input: " + e.getMessage());

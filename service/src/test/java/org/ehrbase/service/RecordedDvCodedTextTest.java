@@ -19,10 +19,14 @@
 
 package org.ehrbase.service;
 
+import static org.junit.Assert.*;
+
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.TermMapping;
 import com.nedap.archie.rm.support.identification.TerminologyId;
+import java.util.ArrayList;
+import java.util.List;
 import org.ehrbase.jooq.pg.tables.EventContext;
 import org.ehrbase.jooq.pg.tables.records.EventContextRecord;
 import org.ehrbase.jooq.pg.udt.records.CodePhraseRecord;
@@ -30,27 +34,25 @@ import org.ehrbase.jooq.pg.udt.records.DvCodedTextRecord;
 import org.jooq.Record;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.*;
-
 /**
  * test DvCodedText stored as a ehr.dv_coded_text UDT
  */
 public class RecordedDvCodedTextTest {
 
     @Test
-    public void testToDB(){
+    public void testToDB() {
 
         Record record = new EventContextRecord();
 
-        DvCodedText dvCodedText = new DvCodedText("testvalue", new CodePhrase("en"), new CodePhrase("UTF-8"), new CodePhrase(new TerminologyId("terminology"), "1224"));
+        DvCodedText dvCodedText = new DvCodedText(
+                "testvalue",
+                new CodePhrase("en"),
+                new CodePhrase("UTF-8"),
+                new CodePhrase(new TerminologyId("terminology"), "1224"));
         TermMapping termMapping = new TermMapping(
                 new CodePhrase(new TerminologyId("A"), "target"),
                 Character.valueOf('>'),
-                new DvCodedText("purpose", new CodePhrase(new TerminologyId("B"), "BBB"))
-        );
+                new DvCodedText("purpose", new CodePhrase(new TerminologyId("B"), "BBB")));
         List<TermMapping> termMappings = new ArrayList<>();
         termMappings.add(termMapping);
         dvCodedText.setMappings(termMappings);
@@ -63,19 +65,19 @@ public class RecordedDvCodedTextTest {
     }
 
     @Test
-    public void testFromDB(){
+    public void testFromDB() {
         Record record = new EventContextRecord();
 
         DvCodedTextRecord dvCodedTextRecord = new DvCodedTextRecord();
         dvCodedTextRecord.setValue("1234");
         dvCodedTextRecord.setDefiningCode(new CodePhraseRecord("term1", "aaa"));
-        dvCodedTextRecord.setTermMapping(new String[]{">|purpose|B|BBB|A|target"});
+        dvCodedTextRecord.setTermMapping(new String[] {">|purpose|B|BBB|A|target"});
 
         record.set(EventContext.EVENT_CONTEXT.SETTING, dvCodedTextRecord);
 
-        DvCodedText dvCodedText = (DvCodedText) new RecordedDvCodedText().fromDB(record, EventContext.EVENT_CONTEXT.SETTING);
+        DvCodedText dvCodedText =
+                (DvCodedText) new RecordedDvCodedText().fromDB(record, EventContext.EVENT_CONTEXT.SETTING);
 
         assertEquals('>', dvCodedText.getMappings().get(0).getMatch());
     }
-
 }

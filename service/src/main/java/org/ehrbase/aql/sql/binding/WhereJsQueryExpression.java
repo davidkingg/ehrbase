@@ -29,7 +29,10 @@ public class WhereJsQueryExpression {
     Boolean requiresJSQueryClosure;
     Boolean isFollowedBySQLConditionalOperator;
 
-    public WhereJsQueryExpression(TaggedStringBuilder expression, Boolean requiresJSQueryClosure, Boolean isFollowedBySQLConditionalOperator) {
+    public WhereJsQueryExpression(
+            TaggedStringBuilder expression,
+            Boolean requiresJSQueryClosure,
+            Boolean isFollowedBySQLConditionalOperator) {
         this.expression = expression;
         this.requiresJSQueryClosure = requiresJSQueryClosure;
         this.isFollowedBySQLConditionalOperator = isFollowedBySQLConditionalOperator;
@@ -39,31 +42,27 @@ public class WhereJsQueryExpression {
      * append the JsQuery tag closure at the right location (e.g. before the following parenthesis!)
      * @return
      */
-    private TaggedStringBuilder closeWithJsQueryTag(){
-        if (Boolean.FALSE.equals(requiresJSQueryClosure))
-            return expression;
+    private TaggedStringBuilder closeWithJsQueryTag() {
+        if (Boolean.FALSE.equals(requiresJSQueryClosure)) return expression;
 
-        if (expression.toString().lastIndexOf(')') == 0)
-            return expression;
+        if (expression.toString().lastIndexOf(')') == 0) return expression;
 
-        for (int i = expression.toString().lastIndexOf(')') - 1; i >= 0; i--){
-            while (i >= 0 && expression.toString().charAt(i)==')'){
+        for (int i = expression.toString().lastIndexOf(')') - 1; i >= 0; i--) {
+            while (i >= 0 && expression.toString().charAt(i) == ')') {
                 i--;
             }
-            //replace the last parenthesis not preceded by another
-            expression.insert(i+1, JsonbEntryQuery.JSQUERY_CLOSE);
+            // replace the last parenthesis not preceded by another
+            expression.insert(i + 1, JsonbEntryQuery.JSQUERY_CLOSE);
         }
 
         return expression;
     }
 
-    public TaggedStringBuilder closure(){
+    public TaggedStringBuilder closure() {
         if (Boolean.TRUE.equals(requiresJSQueryClosure)) {
             if (Boolean.FALSE.equals(isFollowedBySQLConditionalOperator)) {
-                if (expression.toString().charAt(expression.length() - 1) == ')')
-                    expression = closeWithJsQueryTag();
-                else
-                    expression.append(JsonbEntryQuery.JSQUERY_CLOSE);
+                if (expression.toString().charAt(expression.length() - 1) == ')') expression = closeWithJsQueryTag();
+                else expression.append(JsonbEntryQuery.JSQUERY_CLOSE);
             }
             isFollowedBySQLConditionalOperator = false;
             requiresJSQueryClosure = false;

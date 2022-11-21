@@ -19,24 +19,24 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC25;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class UC25Test extends UC25 {
 
-    public UC25Test(){
+    public UC25Test() {
         super();
         this.expectedSqlExpression =
-                "select jsonb_extract_path_text(cast(\"composition_join\".\"feeder_audit\" as jsonb),'originating_system_audit','system_id') as \"/feeder_audit/originating_system_audit/system_id\"" +
-                        " from \"ehr\".\"entry\"" +
-                        " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\"" +
-                        " where \"ehr\".\"entry\".\"template_id\" = ?";
+                "select jsonb_extract_path_text(cast(\"composition_join\".\"feeder_audit\" as jsonb),'originating_system_audit','system_id') as \"/feeder_audit/originating_system_audit/system_id\""
+                        + " from \"ehr\".\"entry\""
+                        + " right outer join \"ehr\".\"composition\" as \"composition_join\" on \"composition_join\".\"id\" = \"ehr\".\"entry\".\"composition_id\""
+                        + " where \"ehr\".\"entry\".\"template_id\" = ?";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

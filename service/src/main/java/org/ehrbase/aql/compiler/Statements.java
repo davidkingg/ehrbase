@@ -18,6 +18,7 @@
 
 package org.ehrbase.aql.compiler;
 
+import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.ehrbase.aql.containment.IdentifierMapper;
@@ -27,8 +28,6 @@ import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.binding.VariableDefinitions;
 import org.ehrbase.aql.sql.queryimpl.attribute.ehr.EhrResolver;
 import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
-
-import java.util.List;
 
 @SuppressWarnings({"java:S3740"})
 public class Statements {
@@ -58,9 +57,8 @@ public class Statements {
 
         whereClause = visitWhere();
 
-        //from Contains
-        if (identifierMapper.hasEhrContainer())
-            appendEhrPredicate(identifierMapper.getEhrContainer());
+        // from Contains
+        if (identifierMapper.hasEhrContainer()) appendEhrPredicate(identifierMapper.getEhrContainer());
 
         topAttributes = queryCompilerPass2.getTopAttributes();
         orderAttributes = queryCompilerPass2.getOrderAttributes();
@@ -77,10 +75,9 @@ public class Statements {
     }
 
     private void appendEhrPredicate(FromEhrDefinition.EhrPredicate ehrPredicate) {
-        if (ehrPredicate == null)
-            return;
+        if (ehrPredicate == null) return;
 
-        //append field, operator and value to the where clause
+        // append field, operator and value to the where clause
         if (!whereClause.isEmpty()) {
             whereClause.add("and");
         }
@@ -94,8 +91,16 @@ public class Statements {
     }
 
     public VariableDefinitions getVariables() {
-        boolean containsNonEhrVariable = variables.stream().map(I_VariableDefinition::getIdentifier).map(s -> identifierMapper.getContainer(s)).anyMatch(c -> c != null && !c.getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class));
-        boolean containsOnlyEhrAttributes = variables.stream().filter(v -> identifierMapper.getContainer(v.getIdentifier()) != null && identifierMapper.getContainer(v.getIdentifier()).getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class))
+        boolean containsNonEhrVariable = variables.stream()
+                .map(I_VariableDefinition::getIdentifier)
+                .map(s -> identifierMapper.getContainer(s))
+                .anyMatch(c -> c != null && !c.getClass().isAssignableFrom(FromEhrDefinition.EhrPredicate.class));
+        boolean containsOnlyEhrAttributes = variables.stream()
+                .filter(v -> identifierMapper.getContainer(v.getIdentifier()) != null
+                        && identifierMapper
+                                .getContainer(v.getIdentifier())
+                                .getClass()
+                                .isAssignableFrom(FromEhrDefinition.EhrPredicate.class))
                 .allMatch(v -> EhrResolver.isEhrAttribute(v.getPath()));
 
         // Force distinct If only contains ehr variables
@@ -125,8 +130,7 @@ public class Statements {
         variables.add(variableDefinition);
     }
 
-    public String getParsedExpression(){
+    public String getParsedExpression() {
         return parseTree.getText();
-
     }
 }

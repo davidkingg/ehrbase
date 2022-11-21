@@ -20,7 +20,6 @@ package org.ehrbase.aql.compiler;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -30,12 +29,11 @@ public class AqlExpressionWithParameters extends AqlExpression {
 
     public static final String PARAMETERS_KEY = "query-parameters";
 
-    public AqlExpressionWithParameters parse(String query, Map<String, Object> parameterValues){
+    public AqlExpressionWithParameters parse(String query, Map<String, Object> parameterValues) {
         String query1 = substitute(query, parameterValues);
         super.parse(query1);
         return this;
     }
-
 
     /**
      * get the parameter values from a json expression in the format:
@@ -50,16 +48,16 @@ public class AqlExpressionWithParameters extends AqlExpression {
      * @return
      */
     @Override
-    public AqlExpressionWithParameters parse(String expression, String jsonParameterMap){
+    public AqlExpressionWithParameters parse(String expression, String jsonParameterMap) {
 
-        //get the map from the json expression
+        // get the map from the json expression
         Gson gson = new GsonBuilder().create();
 
         Map<String, Object> parameterMap = gson.fromJson(jsonParameterMap, Map.class);
 
-        //get the map from query-parameters
+        // get the map from query-parameters
         if (!parameterMap.containsKey(PARAMETERS_KEY))
-            throw new IllegalArgumentException("Json map does not contain "+PARAMETERS_KEY);
+            throw new IllegalArgumentException("Json map does not contain " + PARAMETERS_KEY);
 
         parameterMap = (Map<String, Object>) parameterMap.get(PARAMETERS_KEY);
 
@@ -74,21 +72,21 @@ public class AqlExpressionWithParameters extends AqlExpression {
      * @param parameterValues
      * @return
      */
-    public String substitute(String query, Map<String, Object> parameterValues){
+    public String substitute(String query, Map<String, Object> parameterValues) {
 
         StringBuffer stringBuffer = new StringBuffer();
 
-        //match a string starting with '$' and followed by a number of alphanumeric or '-' or '_'
+        // match a string starting with '$' and followed by a number of alphanumeric or '-' or '_'
         Matcher matcher = Pattern.compile("\\$([\\w|\\-|_|]+)").matcher(query);
 
-        while (matcher.find()){
+        while (matcher.find()) {
             String variable = matcher.group();
             if (parameterValues.get(variable.substring(1)) == null)
-                throw new IllegalArgumentException("Could not substitute parameter in AQL expression: '"+variable+"'");
+                throw new IllegalArgumentException(
+                        "Could not substitute parameter in AQL expression: '" + variable + "'");
             Object parameterValue = parameterValues.get(variable.substring(1));
 
-            if (isSingleQuotedArgument(parameterValue))
-                parameterValue = "'"+parameterValue+"'";
+            if (isSingleQuotedArgument(parameterValue)) parameterValue = "'" + parameterValue + "'";
 
             matcher.appendReplacement(stringBuffer, String.valueOf(parameterValue));
         }
@@ -97,7 +95,7 @@ public class AqlExpressionWithParameters extends AqlExpression {
         return stringBuffer.toString();
     }
 
-    private boolean isSingleQuotedArgument(Object parameterValue){
-       return parameterValue instanceof UUID || parameterValue instanceof String;
+    private boolean isSingleQuotedArgument(Object parameterValue) {
+        return parameterValue instanceof UUID || parameterValue instanceof String;
     }
 }

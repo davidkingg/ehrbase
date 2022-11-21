@@ -18,6 +18,9 @@
 
 package org.ehrbase.dao.access.jooq;
 
+import static org.ehrbase.jooq.pg.tables.Attestation.ATTESTATION;
+import static org.ehrbase.jooq.pg.tables.AuditDetails.AUDIT_DETAILS;
+
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvEHRURI;
 import com.nedap.archie.rm.datavalues.DvText;
@@ -26,6 +29,11 @@ import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.generic.Attestation;
 import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartyProxy;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
@@ -34,19 +42,11 @@ import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.tables.records.AttestationRecord;
 import org.jooq.Result;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.tables.Attestation.ATTESTATION;
-import static org.ehrbase.jooq.pg.tables.AuditDetails.AUDIT_DETAILS;
-
 public class AttestationAccess extends DataAccess implements I_AttestationAccess {
 
     private AttestationRecord attestationRecord;
-    private I_AuditDetailsAccess auditDetailsAccess; // attestation is subclass of audit_details, realized via association with one instance
+    private I_AuditDetailsAccess
+            auditDetailsAccess; // attestation is subclass of audit_details, realized via association with one instance
 
     public AttestationAccess(I_DomainAccess domainAccess) {
         super(domainAccess);
@@ -55,14 +55,16 @@ public class AttestationAccess extends DataAccess implements I_AttestationAccess
     @Override
     public I_AttestationAccess retrieveInstance(UUID attestationId) {
         try {
-            this.attestationRecord = getDataAccess().getContext().fetchOne(ATTESTATION, ATTESTATION.ID.eq(attestationId));
+            this.attestationRecord =
+                    getDataAccess().getContext().fetchOne(ATTESTATION, ATTESTATION.ID.eq(attestationId));
         } catch (Exception e) {
             throw new InternalServerException("fetching attestation failed", e);
         }
 
         auditDetailsAccess = new AuditDetailsAccess(getDataAccess());
         try {
-            auditDetailsAccess.setRecord(getDataAccess().getContext().fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(getAuditId())));
+            auditDetailsAccess.setRecord(
+                    getDataAccess().getContext().fetchOne(AUDIT_DETAILS, AUDIT_DETAILS.ID.eq(getAuditId())));
         } catch (Exception e) {
             throw new InternalServerException("fetching audit_details failed", e);
         }
@@ -71,9 +73,9 @@ public class AttestationAccess extends DataAccess implements I_AttestationAccess
     }
 
     public static List<UUID> retrieveListOfAttestationsByRef(I_DomainAccess dataAccess, UUID attestationRef) {
-        Result<AttestationRecord> result = dataAccess.getContext().fetch(ATTESTATION, ATTESTATION.REFERENCE.eq(attestationRef));
-        if (result.isEmpty())
-            return Collections.emptyList();
+        Result<AttestationRecord> result =
+                dataAccess.getContext().fetch(ATTESTATION, ATTESTATION.REFERENCE.eq(attestationRef));
+        if (result.isEmpty()) return Collections.emptyList();
 
         List<UUID> list = new ArrayList<>();
         for (AttestationRecord rec : result) {
@@ -135,12 +137,14 @@ public class AttestationAccess extends DataAccess implements I_AttestationAccess
         DvCodedText changeType = audit.getChangeType();
         DvText description = audit.getDescription();
 
-        DvMultimedia attestedView = null;   // FIXME VERSIONED_OBJECT_POC: implement retrieval from "attested_view" table
+        DvMultimedia attestedView = null; // FIXME VERSIONED_OBJECT_POC: implement retrieval from "attested_view" table
         String proof = attestationRecord.getProof();
-        List<DvEHRURI> items = null;        // FIXME VERSIONED_OBJECT_POC: implement?! seems to be completely unsupported right now
+        List<DvEHRURI> items =
+                null; // FIXME VERSIONED_OBJECT_POC: implement?! seems to be completely unsupported right now
         DvText reason = new DvText(attestationRecord.getReason());
         boolean isPending = attestationRecord.getIsPending();
 
-        return new Attestation(systemId, committer, time, changeType, description, attestedView, proof, items, reason, isPending);
+        return new Attestation(
+                systemId, committer, time, changeType, description, attestedView, proof, items, reason, isPending);
     }
 }

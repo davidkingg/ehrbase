@@ -19,18 +19,17 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC11;
 import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class UC11Test extends UC11 {
 
     public UC11Test() {
         super();
-        this.expectedSqlExpression =
-                "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\"" +
-                        " from (select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\" offset ? rows fetch next ? rows only";
+        this.expectedSqlExpression = "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\""
+                + " from (select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\" offset ? rows fetch next ? rows only";
     }
 
     @Test

@@ -1,6 +1,5 @@
 package org.ehrbase.aql.compiler;
 
-
 /*
  * Copyright (c) 2020 Luis Marco-Ruiz (Hannover Medical School) and Vitasystems GmbH.
  *
@@ -19,7 +18,13 @@ package org.ehrbase.aql.compiler;
  * limitations under the License.
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.nedap.archie.rm.datavalues.DvCodedText;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.List;
+import javax.net.ssl.SSLContext;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustAllStrategy;
@@ -32,22 +37,16 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.util.ResourceUtils;
 
-import javax.net.ssl.SSLContext;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-//@RunWith(SpringRunner.class)
-//@SpringBootTest//(classes= {org.ehrbase.application.EhrBase.class})
-//@ActiveProfiles("test")
+// @RunWith(SpringRunner.class)
+// @SpringBootTest//(classes= {org.ehrbase.application.EhrBase.class})
+// @ActiveProfiles("test")
 public class FhirTerminologyServerR4AdaptorImplTest {
 
-    //@Autowired
+    // @Autowired
     private I_OpenehrTerminologyServer tsserver;
 
-    @Ignore("This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server and the architecture allows to run Spring integration tests.")
+    @Ignore(
+            "This test runs against ontoserver sample inteance. It is deactivated until we have a test FHIR terminology server and the architecture allows to run Spring integration tests.")
     @Test
     public void shouldRetrieveValueSet() {
 
@@ -85,7 +84,8 @@ public class FhirTerminologyServerR4AdaptorImplTest {
     public void expandValueSetUsingSsl() throws GeneralSecurityException, IOException {
         SSLContext sslContext = SSLContextBuilder.create()
                 .loadKeyMaterial(ResourceUtils.getFile("test-keystore.jks"), "test".toCharArray(), "test".toCharArray())
-                .loadTrustMaterial(ResourceUtils.getFile("test-truststore.jks"), "test".toCharArray(), TrustAllStrategy.INSTANCE)
+                .loadTrustMaterial(
+                        ResourceUtils.getFile("test-truststore.jks"), "test".toCharArray(), TrustAllStrategy.INSTANCE)
                 .build();
 
         HttpClient httpClient = HttpClients.custom()
@@ -104,7 +104,8 @@ public class FhirTerminologyServerR4AdaptorImplTest {
             e.printStackTrace();
         }
 
-        List<DvCodedText> result = tsserver.expandWithParameters("https://www.netzwerk-universitaetsmedizin.de/fhir/ValueSet/frailty-score", "expand");
+        List<DvCodedText> result = tsserver.expandWithParameters(
+                "https://www.netzwerk-universitaetsmedizin.de/fhir/ValueSet/frailty-score", "expand");
         result.forEach((e) -> System.out.println(e.getValue()));
         // 1: Very Severely Frail
         assertThat(result.get(0).getDefiningCode().getCodeString()).isEqualTo("8");

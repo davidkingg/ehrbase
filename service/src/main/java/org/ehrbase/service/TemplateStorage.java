@@ -35,7 +35,6 @@ public interface TemplateStorage {
      */
     List<TemplateMetaData> listAllOperationalTemplates();
 
-
     /**
      * Find all templates ids in the store;
      *

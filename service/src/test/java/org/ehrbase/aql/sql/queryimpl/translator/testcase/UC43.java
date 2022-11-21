@@ -26,11 +26,11 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
  */
 public abstract class UC43 extends QueryProcessorTestBase {
 
-    protected UC43(){
-        this.aql = "select c[name/value = 'Laborbefund-1']/uid/value as uid1,\n" +
-                "\t\t\t   c[name/value = 'Laborbefund-2']/uid/value as uid2\n" +
-                "\t\t\t\tfrom EHR e \n" +
-                "\t\t\t\tcontains COMPOSITION c[openEHR-EHR-COMPOSITION.report-result.v1]";
+    protected UC43() {
+        this.aql = "select c[name/value = 'Laborbefund-1']/uid/value as uid1,\n"
+                + "\t\t\t   c[name/value = 'Laborbefund-2']/uid/value as uid2\n"
+                + "\t\t\t\tfrom EHR e \n"
+                + "\t\t\t\tcontains COMPOSITION c[openEHR-EHR-COMPOSITION.report-result.v1]";
         this.expectedOutputWithJson = false;
     }
 }

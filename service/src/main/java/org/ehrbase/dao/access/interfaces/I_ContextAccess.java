@@ -1,35 +1,34 @@
 /*
- * Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
- * Jake Smolka (Hannover Medical School).
+* Modifications copyright (C) 2019 Christian Chevalley, Vitasystems GmbH and Hannover Medical School,
+* Jake Smolka (Hannover Medical School).
 
- * This file is part of Project EHRbase
+* This file is part of Project EHRbase
 
- * Copyright (c) 2015 Christian Chevalley
- * This file is part of Project Ethercis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright (c) 2015 Christian Chevalley
+* This file is part of Project Ethercis
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package org.ehrbase.dao.access.interfaces;
 
-import org.ehrbase.dao.access.jooq.ContextAccess;
-import com.nedap.archie.rm.composition.EventContext;
-import org.ehrbase.api.exception.InternalServerException;
-import org.jooq.Result;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
 
+import com.nedap.archie.rm.composition.EventContext;
 import java.sql.Timestamp;
 import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.jooq.ContextAccess;
+import org.jooq.Result;
 
 /**
  * Event Context access layer
@@ -73,7 +72,11 @@ public interface I_ContextAccess extends I_SimpleCRUD {
      * @return 1 on success, 0 otherwise
      */
     static Integer delete(I_DomainAccess domainAccess, UUID id) {
-        return domainAccess.getContext().delete(EVENT_CONTEXT).where(EVENT_CONTEXT.ID.eq(id)).execute();
+        return domainAccess
+                .getContext()
+                .delete(EVENT_CONTEXT)
+                .where(EVENT_CONTEXT.ID.eq(id))
+                .execute();
     }
 
     /**
@@ -84,7 +87,8 @@ public interface I_ContextAccess extends I_SimpleCRUD {
      * @return New {@link EventContext} object matching the given time or null if not available.
      * @throws InternalServerException on failure of decoding DvText or DvDateTime
      */
-    static EventContext retrieveHistoricalEventContext(I_DomainAccess domainAccess, UUID id, Timestamp transactionTime) {
+    static EventContext retrieveHistoricalEventContext(
+            I_DomainAccess domainAccess, UUID id, Timestamp transactionTime) {
         return ContextAccess.retrieveHistoricalEventContext(domainAccess, id, transactionTime);
     }
 

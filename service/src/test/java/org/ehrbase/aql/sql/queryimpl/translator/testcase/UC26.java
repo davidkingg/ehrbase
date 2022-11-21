@@ -23,11 +23,10 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC26 extends QueryProcessorTestBase {
 
-    protected UC26(){
-        this.aql = "select c\n" +
-                "from EHR e\n" +
-                "contains COMPOSITION c\n" +
-                " AND NOT CONTAINS ADMIN_ENTRY u[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]";
+    protected UC26() {
+        this.aql = "select c\n" + "from EHR e\n"
+                + "contains COMPOSITION c\n"
+                + " AND NOT CONTAINS ADMIN_ENTRY u[openEHR-EHR-ADMIN_ENTRY.hospitalization.v0]";
         this.expectedOutputWithJson = true;
     }
 }

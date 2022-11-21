@@ -22,13 +22,13 @@ import java.time.temporal.ChronoUnit;
 
 public class TransactionTime {
 
-    private TransactionTime(){}
+    private TransactionTime() {}
 
     /**
      * return a timestamp truncated to Milliseconds
      * @return Timestamp
      */
-    public static Timestamp millis(){
+    public static Timestamp millis() {
         return Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MILLIS));
     }
 }

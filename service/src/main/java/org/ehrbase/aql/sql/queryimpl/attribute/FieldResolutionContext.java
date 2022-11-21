@@ -40,7 +40,15 @@ public class FieldResolutionContext {
     private boolean isUsingSetReturningFunction = false;
     private String rmType;
 
-    public FieldResolutionContext(DSLContext context, String serverNodeId, String identifier, I_VariableDefinition variableDefinition, IQueryImpl.Clause clause, PathResolver pathResolver, IntrospectService introspectCache, String entryRoot) {
+    public FieldResolutionContext(
+            DSLContext context,
+            String serverNodeId,
+            String identifier,
+            I_VariableDefinition variableDefinition,
+            IQueryImpl.Clause clause,
+            PathResolver pathResolver,
+            IntrospectService introspectCache,
+            String entryRoot) {
         this.identifier = identifier;
         this.variableDefinition = variableDefinition;
         this.withAlias = clause.equals(IQueryImpl.Clause.SELECT) && variableDefinition.getPath() != null;

@@ -32,12 +32,11 @@ public class Iso8601Duration {
         this.interval = interval;
     }
 
-    public String toIsoString(){
-        YearToSecond yearToSecond =
-                new YearToSecond(
-                        new YearToMonth(interval.getYears(), interval.getMonths()),
-                        new DayToSecond(interval.getDays(), interval.getHours(), interval.getMinutes(), (int)interval.getSeconds())
-                );
+    public String toIsoString() {
+        YearToSecond yearToSecond = new YearToSecond(
+                new YearToMonth(interval.getYears(), interval.getMonths()),
+                new DayToSecond(
+                        interval.getDays(), interval.getHours(), interval.getMinutes(), (int) interval.getSeconds()));
         return yearToSecond.toDuration().toString();
     }
 }

@@ -23,7 +23,7 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC41 extends QueryProcessorTestBase {
 
-    protected UC41(){
+    protected UC41() {
         this.aql = "SELECT TRUE as constant FROM EHR e";
         this.expectedOutputWithJson = false;
     }

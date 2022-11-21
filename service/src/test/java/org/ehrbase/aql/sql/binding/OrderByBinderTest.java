@@ -18,30 +18,32 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Collections;
+import java.util.List;
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.ehrbase.aql.definition.I_VariableDefinitionHelper;
 import org.ehrbase.dao.jooq.impl.DSLContextHelper;
 import org.jooq.SortField;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class OrderByBinderTest {
 
     @Test
     public void getOrderByFields() {
 
-        //ascending
+        // ascending
         {
             // represents a/context/start_time/value as date_created and order by date_created ASC
-            OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
+            OrderAttribute orderAttribute = new OrderAttribute(
+                    I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.ASC);
 
-            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
+            OrderByBinder cut = new OrderByBinder(
+                    null,
+                    Collections.singletonList(orderAttribute),
+                    DSLContextHelper.buildContext().selectQuery());
             List<SortField<Object>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
@@ -49,13 +51,17 @@ public class OrderByBinderTest {
             assertThat(sortField.toString()).isEqualTo("\"date_created\" asc");
         }
 
-        //descending
+        // descending
         {
             // represents a/context/start_time/value as date_created and order by date_created DESC
-            OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
+            OrderAttribute orderAttribute = new OrderAttribute(
+                    I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
             orderAttribute.setDirection(OrderAttribute.OrderDirection.DESC);
 
-            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
+            OrderByBinder cut = new OrderByBinder(
+                    null,
+                    Collections.singletonList(orderAttribute),
+                    DSLContextHelper.buildContext().selectQuery());
             List<SortField<Object>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);
@@ -63,13 +69,16 @@ public class OrderByBinderTest {
             assertThat(sortField.toString()).isEqualTo("\"date_created\" desc");
         }
 
-        //no direction
+        // no direction
         {
             // represents a/context/start_time/value as date_created and order by date_created
-            OrderAttribute orderAttribute = new OrderAttribute(I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
+            OrderAttribute orderAttribute = new OrderAttribute(
+                    I_VariableDefinitionHelper.build(null, "date_created", null, false, false, false));
 
-
-            OrderByBinder cut = new OrderByBinder(null, Collections.singletonList(orderAttribute), DSLContextHelper.buildContext().selectQuery());
+            OrderByBinder cut = new OrderByBinder(
+                    null,
+                    Collections.singletonList(orderAttribute),
+                    DSLContextHelper.buildContext().selectQuery());
             List<SortField<Object>> actual = cut.getOrderByFields();
 
             assertThat(actual).size().isEqualTo(1);

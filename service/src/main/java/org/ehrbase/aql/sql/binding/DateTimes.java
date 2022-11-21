@@ -13,13 +13,13 @@ public class DateTimes {
         this.testItem = toCheck;
     }
 
-    public boolean isDateTimeZoned(){
+    public boolean isDateTimeZoned() {
         try {
             if (testItem.startsWith("'") && testItem.endsWith("'"))
                 testItem = testItem.substring(1, testItem.length() - 1);
             ZonedDateTime.parse(testItem);
             return true;
-        } catch (DateTimeParseException e){
+        } catch (DateTimeParseException e) {
             return false;
         }
     }

@@ -1,13 +1,13 @@
 package org.ehrbase.dao.access.util;
 
-import org.junit.Test;
-
 import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 public class StoredQueryQualifiedNameTest {
 
     @Test
-    public void testFullName(){
+    public void testFullName() {
         String name = "org.example.departmentx.test::diabetes-patient-overview/1.0.2";
 
         StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name);
@@ -20,7 +20,7 @@ public class StoredQueryQualifiedNameTest {
     }
 
     @Test
-    public void testUncompleteName(){
+    public void testUncompleteName() {
         String name = "org.example.departmentx.test::diabetes-patient-overview";
 
         StoredQueryQualifiedName storedQueryQualifiedName = new StoredQueryQualifiedName(name);
@@ -33,13 +33,13 @@ public class StoredQueryQualifiedNameTest {
     }
 
     @Test
-    public void testBadlyformedName(){
+    public void testBadlyformedName() {
         String name = "org.example.departmentx.test/diabetes-patient-overview";
 
         try {
             new StoredQueryQualifiedName(name);
             fail();
-        } catch (Exception e){}
+        } catch (Exception e) {
+        }
     }
-
 }

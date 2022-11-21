@@ -17,6 +17,8 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.ehr.ehrstatus;
 
+import static org.ehrbase.jooq.pg.Tables.STATUS;
+
 import org.ehrbase.aql.sql.binding.JoinBinder;
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
@@ -25,9 +27,7 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-import static org.ehrbase.jooq.pg.Tables.STATUS;
-
-@SuppressWarnings({"java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3740", "java:S1452"})
 public class SimpleEhrStatusAttribute extends EhrStatusAttribute {
 
     protected Field tableField;

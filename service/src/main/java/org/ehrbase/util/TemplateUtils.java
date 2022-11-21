@@ -32,64 +32,61 @@ import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
  */
 public class TemplateUtils {
 
-  public static final List<String> UNSUPPORTED_RM_TYPES = List.of("ITEM_TABLE");
+    public static final List<String> UNSUPPORTED_RM_TYPES = List.of("ITEM_TABLE");
 
-  private TemplateUtils() {
-  }
+    private TemplateUtils() {}
 
-  /**
-   * Check whether the given OPT template is supported.
-   *
-   * @param template the candidate template
-   * @return <code>true</code> if the template is supported
-   */
-  public static boolean isSupported(OPERATIONALTEMPLATE template) {
-    var webTemplate = new OPTParser(template).parse();
-    return isSupported(webTemplate);
-  }
-
-  /**
-   * Check whether the given WebTemplate is supported.
-   *
-   * @param template the candidate template
-   * @return <code>true</code> if the template is supported
-   */
-  public static boolean isSupported(WebTemplate template) {
-    return template.getTree()
-        .findMatching(node -> UNSUPPORTED_RM_TYPES.contains(node.getRmType()))
-        .isEmpty();
-  }
-
-  /**
-   * Retrieves the template ID from the given OPT template.
-   *
-   * @param template the template
-   * @return template ID
-   */
-  public static String getTemplateId(OPERATIONALTEMPLATE template) {
-    if (template == null) {
-      throw new IllegalArgumentException("Template must not be null");
+    /**
+     * Check whether the given OPT template is supported.
+     *
+     * @param template the candidate template
+     * @return <code>true</code> if the template is supported
+     */
+    public static boolean isSupported(OPERATIONALTEMPLATE template) {
+        var webTemplate = new OPTParser(template).parse();
+        return isSupported(webTemplate);
     }
-    return Optional.ofNullable(template.getTemplateId())
-        .map(OBJECTID::getValue)
-        .orElseThrow(() -> new IllegalArgumentException(
-            "Template ID must not be null for the given template"));
-  }
 
-  /**
-   * Retrieves the template unique ID from the given OPT template.
-   *
-   * @param template the template
-   * @return template unique ID
-   */
-  public static UUID getUid(OPERATIONALTEMPLATE template) {
-    if (template == null) {
-      throw new IllegalArgumentException("Template must not be null");
+    /**
+     * Check whether the given WebTemplate is supported.
+     *
+     * @param template the candidate template
+     * @return <code>true</code> if the template is supported
+     */
+    public static boolean isSupported(WebTemplate template) {
+        return template.getTree()
+                .findMatching(node -> UNSUPPORTED_RM_TYPES.contains(node.getRmType()))
+                .isEmpty();
     }
-    return Optional.ofNullable(template.getUid())
-        .map(OBJECTID::getValue)
-        .map(UUID::fromString)
-        .orElseThrow(() -> new IllegalArgumentException(
-            "Unique ID must not be null for the given template"));
-  }
+
+    /**
+     * Retrieves the template ID from the given OPT template.
+     *
+     * @param template the template
+     * @return template ID
+     */
+    public static String getTemplateId(OPERATIONALTEMPLATE template) {
+        if (template == null) {
+            throw new IllegalArgumentException("Template must not be null");
+        }
+        return Optional.ofNullable(template.getTemplateId())
+                .map(OBJECTID::getValue)
+                .orElseThrow(() -> new IllegalArgumentException("Template ID must not be null for the given template"));
+    }
+
+    /**
+     * Retrieves the template unique ID from the given OPT template.
+     *
+     * @param template the template
+     * @return template unique ID
+     */
+    public static UUID getUid(OPERATIONALTEMPLATE template) {
+        if (template == null) {
+            throw new IllegalArgumentException("Template must not be null");
+        }
+        return Optional.ofNullable(template.getUid())
+                .map(OBJECTID::getValue)
+                .map(UUID::fromString)
+                .orElseThrow(() -> new IllegalArgumentException("Unique ID must not be null for the given template"));
+    }
 }

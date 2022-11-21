@@ -12,7 +12,8 @@ public class JooqCodePhrase {
         this.codePhraseRecord = codePhraseRecord;
     }
 
-    public CodePhrase toRmInstance(){
-        return new CodePhrase(new TerminologyId(codePhraseRecord.getTerminologyIdValue()), codePhraseRecord.getCodeString());
+    public CodePhrase toRmInstance() {
+        return new CodePhrase(
+                new TerminologyId(codePhraseRecord.getTerminologyIdValue()), codePhraseRecord.getCodeString());
     }
 }

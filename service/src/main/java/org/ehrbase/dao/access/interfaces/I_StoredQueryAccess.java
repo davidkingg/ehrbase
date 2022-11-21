@@ -2,7 +2,6 @@ package org.ehrbase.dao.access.interfaces;
 
 import java.sql.Timestamp;
 
-
 public interface I_StoredQueryAccess {
     I_StoredQueryAccess commit(Timestamp transactionTime);
 

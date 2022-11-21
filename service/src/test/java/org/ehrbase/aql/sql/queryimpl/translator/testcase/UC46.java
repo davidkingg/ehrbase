@@ -23,15 +23,14 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC46 extends QueryProcessorTestBase {
 
-    //test encoding as DISTINCT ON on both variable!
-    protected UC46(){
-        this.aql = "select DISTINCT " +
-                "   a/description[at0001]/items[at0002]/value/value as description," +
-                "   a/time as timing" +
-                " from EHR e " +
-                "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
-                "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]" +
-                "order by description ASC";
+    // test encoding as DISTINCT ON on both variable!
+    protected UC46() {
+        this.aql = "select DISTINCT " + "   a/description[at0001]/items[at0002]/value/value as description,"
+                + "   a/time as timing"
+                + " from EHR e "
+                + "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  "
+                + "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]"
+                + "order by description ASC";
         this.expectedOutputWithJson = false;
     }
 }

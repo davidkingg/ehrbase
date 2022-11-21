@@ -18,13 +18,12 @@
 
 package org.ehrbase.aql.sql;
 
-import org.jooq.Record;
-import org.jooq.Result;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jooq.Record;
+import org.jooq.Result;
 
 /**
  * Wrapper calls for a query result
@@ -56,7 +55,6 @@ public class AqlResult {
         aqlColumns = variables;
     }
 
-
     public void setAuditResultMap(Map<String, Set<Object>> auditResultMap) {
         this.auditResultMap = auditResultMap;
     }
@@ -65,15 +63,12 @@ public class AqlResult {
         return auditResultMap;
     }
 
+    public boolean variablesContains(String fieldName) {
+        if (aqlColumns.containsKey(fieldName)) return true;
 
-    public boolean variablesContains(String fieldName){
-        if (aqlColumns.containsKey(fieldName))
-            return true;
-
-        //else iterate on values
-        for (String value: aqlColumns.values()){
-            if (value.equals(fieldName))
-                return true;
+        // else iterate on values
+        for (String value : aqlColumns.values()) {
+            if (value.equals(fieldName)) return true;
         }
 
         return false;

@@ -33,11 +33,11 @@ public class PersistedObjectId {
      * @param identifiedRecord
      * @return
      */
-    public ObjectId fromDB(PartyIdentifiedRecord identifiedRecord){
+    public ObjectId fromDB(PartyIdentifiedRecord identifiedRecord) {
 
         ObjectId objectId = null;
 
-        switch(identifiedRecord.getObjectIdType()){
+        switch (identifiedRecord.getObjectIdType()) {
             case generic_id:
                 objectId = new GenericId(identifiedRecord.getPartyRefValue(), identifiedRecord.getPartyRefScheme());
                 break;
@@ -57,17 +57,16 @@ public class PersistedObjectId {
      * @param externalRef
      * @return
      */
-    public String objectIdClassSnakeCase(PartyRef externalRef){
+    public String objectIdClassSnakeCase(PartyRef externalRef) {
 
         ObjectId objectId = externalRef.getId();
 
         String objectIdType = null;
 
-        if (objectId != null){
+        if (objectId != null) {
             objectIdType = new SnakeCase(objectId.getClass().getSimpleName()).camelToSnake();
         }
 
         return objectIdType;
-
     }
 }

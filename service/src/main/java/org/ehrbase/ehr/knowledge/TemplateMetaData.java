@@ -18,18 +18,16 @@
 
 package org.ehrbase.ehr.knowledge;
 
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public class TemplateMetaData {
     private OPERATIONALTEMPLATE operationaltemplate;
     private OffsetDateTime createdOn;
 
     private List<String> errorList;
-
 
     public OPERATIONALTEMPLATE getOperationaltemplate() {
         return operationaltemplate;
@@ -47,7 +45,6 @@ public class TemplateMetaData {
         this.createdOn = createdOn;
     }
 
-
     public List<String> getErrorList() {
         if (this.errorList == null) {
             this.errorList = new ArrayList<>();
@@ -61,6 +58,4 @@ public class TemplateMetaData {
         }
         this.errorList.add(error);
     }
-
-
 }

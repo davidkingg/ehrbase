@@ -31,16 +31,21 @@ public class LocatableItem {
     private final JsonbEntryQuery jsonbEntryQuery;
     private final IQueryImpl.Clause clause;
 
-    public LocatableItem(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
+    public LocatableItem(
+            CompositionAttributeQuery compositionAttributeQuery,
+            JsonbEntryQuery jsonbEntryQuery,
+            IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
         this.clause = clause;
     }
 
-    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition) throws UnknownVariableException {
+    public MultiFields toSql(String templateId, I_VariableDefinition variableDefinition)
+            throws UnknownVariableException {
         MultiFields multiFields;
 
-        multiFields = jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
+        multiFields =
+                jsonbEntryQuery.makeField(templateId, variableDefinition.getIdentifier(), variableDefinition, clause);
 
         if (multiFields == null) {
             compositionAttributeQuery.setUseEntry(true);

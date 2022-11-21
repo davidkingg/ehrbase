@@ -1,7 +1,6 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -13,8 +12,7 @@ public class RecordedDvDateTime {
 
     private DvDateTime dateTime;
 
-    public RecordedDvDateTime() {
-    }
+    public RecordedDvDateTime() {}
 
     public RecordedDvDateTime(DvDateTime dateTime) {
         this.dateTime = dateTime;
@@ -34,7 +32,6 @@ public class RecordedDvDateTime {
             return Optional.empty();
         }
     }
-
 
     /**
      * Decodes given timestamp and timezone into a openEHR {@link DvDateTime} object.

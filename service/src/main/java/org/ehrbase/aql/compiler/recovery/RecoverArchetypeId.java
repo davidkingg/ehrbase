@@ -38,7 +38,7 @@ public class RecoverArchetypeId {
         if (context instanceof AqlParser.ArchetypedClassExprContext && offendingSymbol instanceof CommonToken) {
             CommonToken symbol = (CommonToken) offendingSymbol;
             if (symbol.getText().startsWith("'") && symbol.getText().endsWith("'"))
-                return true; //ignore since it will be 'fixed' by the recognizer
+                return true; // ignore since it will be 'fixed' by the recognizer
         }
         return false;
     }
@@ -48,7 +48,7 @@ public class RecoverArchetypeId {
         String archetypeId = StringUtils.stripEnd(StringUtils.stripStart(offendingToken, "'"), "'");
         String expression = context.getText().replace(offendingToken, archetypeId);
 
-        //will throw an exception if not valid
+        // will throw an exception if not valid
         new AqlExpression().parse(expression, "archetypedClassExpr");
 
         return archetypeId;

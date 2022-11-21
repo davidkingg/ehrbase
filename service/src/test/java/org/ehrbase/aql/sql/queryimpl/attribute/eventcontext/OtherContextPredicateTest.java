@@ -1,8 +1,8 @@
 package org.ehrbase.aql.sql.queryimpl.attribute.eventcontext;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 class OtherContextPredicateTest {
 
@@ -15,6 +15,8 @@ class OtherContextPredicateTest {
         assertEquals("context/other_context", new OtherContextPredicate(queryPath).adjustForQuery());
 
         queryPath = "context/other_context[at0001]/items[at0003]/value/value";
-        assertEquals("context/other_context/items[at0003]/value/value", new OtherContextPredicate(queryPath).adjustForQuery());
+        assertEquals(
+                "context/other_context/items[at0003]/value/value",
+                new OtherContextPredicate(queryPath).adjustForQuery());
     }
 }

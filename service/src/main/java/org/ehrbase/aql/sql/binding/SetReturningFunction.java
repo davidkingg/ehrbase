@@ -26,19 +26,22 @@ import java.util.regex.Pattern;
 public final class SetReturningFunction {
 
     private static final Pattern SUPPORTED_SET_RETURNING_FUNCTION = Pattern.compile(
-            //ignore new line, any char, check for boundary
-            "(?s).*\\b("+
-            //json array
-            AQL_NODE_ITERATIVE_FUNCTION+
-                    //String array
-                    "|regexp_match|regexp_matches|regexp_split_to_array|regexp_split_to_table"+
-            ")\\b.*", Pattern.CASE_INSENSITIVE);
+            // ignore new line, any char, check for boundary
+            "(?s).*\\b(" +
+                    // json array
+                    AQL_NODE_ITERATIVE_FUNCTION
+                    +
+                    // String array
+                    "|regexp_match|regexp_matches|regexp_split_to_array|regexp_split_to_table"
+                    + ")\\b.*",
+            Pattern.CASE_INSENSITIVE);
 
     private SetReturningFunction() {
-        //NOOP
+        // NOOP
     }
 
-    public static boolean isUsed(String expression){
-        return expression != null && SUPPORTED_SET_RETURNING_FUNCTION.matcher(expression).matches();
+    public static boolean isUsed(String expression) {
+        return expression != null
+                && SUPPORTED_SET_RETURNING_FUNCTION.matcher(expression).matches();
     }
 }

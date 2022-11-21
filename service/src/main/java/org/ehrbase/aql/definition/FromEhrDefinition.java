@@ -120,5 +120,4 @@ public class FromEhrDefinition implements I_FromEntityDefinition {
     public List<EhrPredicate> getEhrPredicates() {
         return fromEhrPredicates;
     }
-
 }

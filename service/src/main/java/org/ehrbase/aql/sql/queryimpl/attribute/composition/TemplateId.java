@@ -17,10 +17,10 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.composition;
 
+import static org.ehrbase.jooq.pg.Tables.ENTRY;
+
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
-
-import static org.ehrbase.jooq.pg.Tables.ENTRY;
 
 public class TemplateId extends SimpleCompositionAttribute {
 

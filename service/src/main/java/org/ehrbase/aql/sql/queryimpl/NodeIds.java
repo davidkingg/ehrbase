@@ -21,9 +21,9 @@ package org.ehrbase.aql.sql.queryimpl;
 
 import java.util.StringTokenizer;
 
-public class NodeIds {//from Locatable
+public class NodeIds { // from Locatable
 
-    private NodeIds(){}
+    private NodeIds() {}
 
     public static String toCamelCase(String underscoreSeparated) {
         if (!underscoreSeparated.contains("_")) {

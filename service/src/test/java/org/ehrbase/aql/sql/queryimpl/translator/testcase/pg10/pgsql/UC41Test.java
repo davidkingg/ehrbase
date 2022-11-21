@@ -19,21 +19,20 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC41;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class UC41Test extends UC41 {
 
-    public UC41Test(){
+    public UC41Test() {
         super();
-        this.expectedSqlExpression =
-                "select ? as \"constant\" from \"ehr\".\"entry\"";
+        this.expectedSqlExpression = "select ? as \"constant\" from \"ehr\".\"entry\"";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

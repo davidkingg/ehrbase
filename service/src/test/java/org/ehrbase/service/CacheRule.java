@@ -25,11 +25,10 @@ import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 
 public class CacheRule extends TestWatcher {
 
-  public CacheManager cacheManager;
+    public CacheManager cacheManager;
 
-  @Override
-  protected void starting(Description description) {
-    cacheManager = new ConcurrentMapCacheManager();
-  }
+    @Override
+    protected void starting(Description description) {
+        cacheManager = new ConcurrentMapCacheManager();
+    }
 }
-

@@ -21,19 +21,18 @@ package org.ehrbase.ehr.knowledge;
 import java.io.InputStream;
 
 public enum TemplateTestData {
+    CLINICAL_CONTENT_VALIDATION("clinical_content_validation.opt"),
+    IMMUNISATION_SUMMARY("IDCR - Immunisation summary.v0.opt"),
+    NON_UNIQUE_AQL_PATH("non_unique_aql_paths.opt"),
+    ANAMNESE("Anamnese.opt");
 
-  CLINICAL_CONTENT_VALIDATION("clinical_content_validation.opt"),
-  IMMUNISATION_SUMMARY("IDCR - Immunisation summary.v0.opt"),
-  NON_UNIQUE_AQL_PATH("non_unique_aql_paths.opt"),
-  ANAMNESE("Anamnese.opt");
+    private final String filename;
 
-  private final String filename;
+    TemplateTestData(String filename) {
+        this.filename = filename;
+    }
 
-  TemplateTestData(String filename) {
-    this.filename = filename;
-  }
-
-  public InputStream getStream() {
-    return getClass().getResourceAsStream("/knowledge/" + filename);
-  }
+    public InputStream getStream() {
+        return getClass().getResourceAsStream("/knowledge/" + filename);
+    }
 }

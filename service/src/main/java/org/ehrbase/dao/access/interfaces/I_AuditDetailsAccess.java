@@ -19,13 +19,12 @@
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.generic.AuditDetails;
+import java.sql.Timestamp;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
-
-import java.sql.Timestamp;
-import java.util.UUID;
 
 public interface I_AuditDetailsAccess extends I_SimpleCRUD {
 
@@ -50,7 +49,12 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
      * @return new access instance
      * @throws InternalServerException if creating or retrieving system failed
      */
-    static I_AuditDetailsAccess getInstance(I_DomainAccess dataAccess, UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description) {
+    static I_AuditDetailsAccess getInstance(
+            I_DomainAccess dataAccess,
+            UUID systemId,
+            UUID committer,
+            I_ConceptAccess.ContributionChangeType changeType,
+            String description) {
         return new AuditDetailsAccess(dataAccess, systemId, committer, changeType, description);
     }
 
@@ -81,11 +85,13 @@ public interface I_AuditDetailsAccess extends I_SimpleCRUD {
      * @param description Optional
      * @return Indicating success of operation
      */
-    Boolean update(UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description);
+    Boolean update(
+            UUID systemId, UUID committer, I_ConceptAccess.ContributionChangeType changeType, String description);
 
     UUID getId();
 
     void setSystemId(UUID systemId);
+
     UUID getSystemId();
 
     /**

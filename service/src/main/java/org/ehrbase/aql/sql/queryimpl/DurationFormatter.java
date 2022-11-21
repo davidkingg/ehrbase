@@ -27,9 +27,8 @@ import org.postgresql.util.PGInterval;
 
 public class DurationFormatter {
 
-    public static void toISO8601(Result<Record> result){
-        if (result.isEmpty())
-            return;
+    public static void toISO8601(Result<Record> result) {
+        if (result.isEmpty()) return;
 
         for (Record record : result) {
 

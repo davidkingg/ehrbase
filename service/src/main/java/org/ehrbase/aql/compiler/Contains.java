@@ -18,13 +18,12 @@
 
 package org.ehrbase.aql.compiler;
 
+import java.util.Set;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.ehrbase.aql.containment.ContainPropositions;
 import org.ehrbase.aql.containment.IdentifierMapper;
 import org.ehrbase.service.KnowledgeCacheService;
-
-import java.util.Set;
 
 /**
  * main entry point for CONTAINS clause resolution
@@ -34,7 +33,7 @@ public class Contains {
     private ParseTree parseTree;
     private IdentifierMapper identifierMapper;
 
-    //list of templates satisfying the CONTAINS expressions
+    // list of templates satisfying the CONTAINS expressions
     private Set<String> templates;
 
     private final KnowledgeCacheService knowledgeCache;
@@ -58,7 +57,6 @@ public class Contains {
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(queryCompilerPass1, parseTree);
 
-
         ContainPropositions containPropositions = queryCompilerPass1.containPropositions();
         containPropositions.evaluate(knowledgeCache);
         this.templates = containPropositions.resolvedTemplates();
@@ -69,8 +67,7 @@ public class Contains {
         return this;
     }
 
-
-    //for tests purpose
+    // for tests purpose
     public Set<String> getTemplates() {
         return templates;
     }
@@ -86,5 +83,4 @@ public class Contains {
     public boolean hasContains() {
         return hasContains;
     }
-
 }

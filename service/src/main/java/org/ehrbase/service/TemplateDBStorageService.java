@@ -37,66 +37,65 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TemplateDBStorageService implements TemplateStorage {
 
-  private final DSLContext context;
-  private final ServerConfig serverConfig;
+    private final DSLContext context;
+    private final ServerConfig serverConfig;
 
-  public TemplateDBStorageService(DSLContext context, ServerConfig serverConfig) {
-    this.context = context;
-    this.serverConfig = serverConfig;
-  }
-
-  @Override
-  public List<TemplateMetaData> listAllOperationalTemplates() {
-    return I_TemplateStoreAccess.fetchAll(getDataAccess());
-  }
-
-  @Override
-  public Set<String> findAllTemplateIds() {
-    return I_TemplateStoreAccess.fetchAllTemplateIds(getDataAccess());
-  }
-
-  @Override
-  public void storeTemplate(OPERATIONALTEMPLATE template) {
-    if (readOperationaltemplate(template.getTemplateId().getValue()).isPresent()) {
-      I_TemplateStoreAccess.getInstance(getDataAccess(), template).update();
-    } else {
-      I_TemplateStoreAccess.getInstance(getDataAccess(), template).commit();
+    public TemplateDBStorageService(DSLContext context, ServerConfig serverConfig) {
+        this.context = context;
+        this.serverConfig = serverConfig;
     }
-  }
 
-  @Override
-  public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
-    return Optional.ofNullable(
-        I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId)
-            .getTemplate());
-  }
+    @Override
+    public List<TemplateMetaData> listAllOperationalTemplates() {
+        return I_TemplateStoreAccess.fetchAll(getDataAccess());
+    }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
-    return I_TemplateStoreAccess.adminUpdateTemplate(getDataAccess(), template);
-  }
+    @Override
+    public Set<String> findAllTemplateIds() {
+        return I_TemplateStoreAccess.fetchAllTemplateIds(getDataAccess());
+    }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public boolean deleteTemplate(String templateId) {
+    @Override
+    public void storeTemplate(OPERATIONALTEMPLATE template) {
+        if (readOperationaltemplate(template.getTemplateId().getValue()).isPresent()) {
+            I_TemplateStoreAccess.getInstance(getDataAccess(), template).update();
+        } else {
+            I_TemplateStoreAccess.getInstance(getDataAccess(), template).commit();
+        }
+    }
 
-    return I_TemplateStoreAccess.deleteTemplate(getDataAccess(), templateId);
-  }
+    @Override
+    public Optional<OPERATIONALTEMPLATE> readOperationaltemplate(String templateId) {
+        return Optional.ofNullable(I_TemplateStoreAccess.retrieveInstanceByTemplateId(getDataAccess(), templateId)
+                .getTemplate());
+    }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList) {
-    return I_TemplateStoreAccess.adminDeleteAllTemplates(getDataAccess());
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
+        return I_TemplateStoreAccess.adminUpdateTemplate(getDataAccess(), template);
+    }
 
-  protected I_DomainAccess getDataAccess() {
-    return new ServiceDataAccess(context, null, null, this.serverConfig);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteTemplate(String templateId) {
+
+        return I_TemplateStoreAccess.deleteTemplate(getDataAccess(), templateId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int adminDeleteAllTemplates(List<TemplateMetaData> templateMetaDataList) {
+        return I_TemplateStoreAccess.adminDeleteAllTemplates(getDataAccess());
+    }
+
+    protected I_DomainAccess getDataAccess() {
+        return new ServiceDataAccess(context, null, null, this.serverConfig);
+    }
 }

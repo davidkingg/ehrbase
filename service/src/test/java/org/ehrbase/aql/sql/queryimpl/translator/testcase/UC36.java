@@ -23,7 +23,7 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC36 extends QueryProcessorTestBase {
 
-    protected UC36(){
+    protected UC36() {
         this.aql = "SELECT e FROM EHR e";
         this.expectedOutputWithJson = true;
     }

@@ -37,35 +37,28 @@ class WhereClauseUtil {
      * A block is delimited by '[...]', '{...}' or '(...)'
      * @return true if the block is balanced, false otherwise
      */
-    boolean isBalancedBlocks(){
+    boolean isBalancedBlocks() {
 
         Stack<Object> stack = new Stack<>();
 
-        for (Object item: expression){
-            if (item.toString().length() == 1 && item.toString().matches("\\(|}|\\["))
-                stack.push(item);
-            else if (item.toString().length() == 1 && item.toString().matches("\\)|\\{|\\]")){
-                if (stack.empty())
-                    return false;
-                else if (!isBalanced(stack.pop(), item))
-                    return false;
+        for (Object item : expression) {
+            if (item.toString().length() == 1 && item.toString().matches("\\(|}|\\[")) stack.push(item);
+            else if (item.toString().length() == 1 && item.toString().matches("\\)|\\{|\\]")) {
+                if (stack.empty()) return false;
+                else if (!isBalanced(stack.pop(), item)) return false;
             }
         }
 
         return stack.empty();
     }
 
-    private boolean isBalanced(Object fromStack, Object actual){
+    private boolean isBalanced(Object fromStack, Object actual) {
         boolean result = false;
-        if (actual.toString().equals(")"))
-            result = fromStack.toString().equals("(");
-        else if (actual.toString().equals("]"))
-            result = fromStack.toString().equals("[");
-        if (actual.toString().equals("}"))
-            result = fromStack.toString().equals("{");
+        if (actual.toString().equals(")")) result = fromStack.toString().equals("(");
+        else if (actual.toString().equals("]")) result = fromStack.toString().equals("[");
+        if (actual.toString().equals("}")) result = fromStack.toString().equals("{");
 
-        if (!result)
-            unbalanced = actual.toString();
+        if (!result) unbalanced = actual.toString();
 
         return result;
     }

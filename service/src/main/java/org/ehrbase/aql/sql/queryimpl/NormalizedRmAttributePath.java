@@ -19,11 +19,10 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
+import static org.ehrbase.aql.sql.queryimpl.EntryAttributeMapper.OTHER_PARTICIPATIONS;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.ehrbase.aql.sql.queryimpl.EntryAttributeMapper.OTHER_PARTICIPATIONS;
 
 public class NormalizedRmAttributePath {
 
@@ -37,19 +36,22 @@ public class NormalizedRmAttributePath {
         this.pathSegments = pathSegments;
     }
 
-    public List<String> transformStartingAt(int fromIndex){
+    public List<String> transformStartingAt(int fromIndex) {
         List<String> resultingPaths;
 
-        if (pathSegments.size() == 1 && pathSegments.get(0).contains(FEEDER_SYSTEM_ITEM_IDS) && !pathSegments.get(0).endsWith(FEEDER_SYSTEM_ITEM_IDS))
+        if (pathSegments.size() == 1
+                && pathSegments.get(0).contains(FEEDER_SYSTEM_ITEM_IDS)
+                && !pathSegments.get(0).endsWith(FEEDER_SYSTEM_ITEM_IDS))
             return new NormalizedFeederAuditAttributePath(pathSegments).transform();
-        if (pathSegments.size() >= 1 && pathSegments.get(pathSegments.size() - 1).contains(OTHER_PARTICIPATIONS))
+        if (pathSegments.size() >= 1
+                && pathSegments.get(pathSegments.size() - 1).contains(OTHER_PARTICIPATIONS))
             return new NormalizedOtherParticipations(pathSegments).transform();
-        else if (!(pathSegments.stream().noneMatch(segment -> segment.contains(OTHER_CONTEXT) || segment.contains(OTHER_DETAILS))))
+        else if (!(pathSegments.stream()
+                .noneMatch(segment -> segment.contains(OTHER_CONTEXT) || segment.contains(OTHER_DETAILS))))
             return new NormalizedItemStructureAttributePath(pathSegments).transformStartingAt(fromIndex);
         else {
             resultingPaths = new ArrayList<>(pathSegments);
             return resultingPaths;
         }
-
     }
 }

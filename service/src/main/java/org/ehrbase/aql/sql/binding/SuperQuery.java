@@ -16,6 +16,12 @@
 
 package org.ehrbase.aql.sql.binding;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.aql.compiler.OrderAttribute;
 import org.ehrbase.aql.definition.FuncParameter;
@@ -30,13 +36,6 @@ import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
 
 /**
  * @author Christian Chevalley
@@ -55,7 +54,11 @@ public class SuperQuery {
 
     private boolean outputWithJson;
 
-    public SuperQuery(I_DomainAccess domainAccess, VariableDefinitions variableDefinitions, SelectQuery<?> query, boolean containsJson) {
+    public SuperQuery(
+            I_DomainAccess domainAccess,
+            VariableDefinitions variableDefinitions,
+            SelectQuery<?> query,
+            boolean containsJson) {
         this.context = domainAccess.getContext();
         this.variableDefinitions = variableDefinitions;
         this.query = query;
@@ -66,7 +69,7 @@ public class SuperQuery {
         List<Field<?>> fields = new ArrayList<>();
         Iterator<I_VariableDefinition> iterator = variableDefinitions.iterator();
 
-        //check if the list of variable contains at least ONE distinct statement
+        // check if the list of variable contains at least ONE distinct statement
         if (!variableDefinitions.hasDistinctOperator()) {
             return fields;
         }
@@ -81,8 +84,9 @@ public class SuperQuery {
                 fields.add(field(name(stringBuilder.toString())));
 
             } else {
-                if (variableDefinition.getAlias() == null || variableDefinition.getAlias().isEmpty()) {
-                    fields.add(field(name(DefaultColumnId.value(variableDefinition)))); //CR #50
+                if (variableDefinition.getAlias() == null
+                        || variableDefinition.getAlias().isEmpty()) {
+                    fields.add(field(name(DefaultColumnId.value(variableDefinition)))); // CR #50
                 } else {
                     fields.add(field(name(variableDefinition.getAlias())));
                 }
@@ -123,8 +127,8 @@ public class SuperQuery {
             } else if (variableDefinition.isExtension()) {
                 log.debug("Not yet implemented");
             } else {
-                //check if this alias is serviced by a function
-                //check if this alias requires distinct
+                // check if this alias is serviced by a function
+                // check if this alias requires distinct
                 distinctRequired = distinctRequired || variableDefinition.isDistinct();
 
                 if (skipField.contains(alias)) {
@@ -142,7 +146,7 @@ public class SuperQuery {
         selectQuery.addSelect(fields);
         selectQuery.addFrom(query);
 
-        //aggregate return scalar values
+        // aggregate return scalar values
         this.outputWithJson = false;
 
         return selectQuery;
@@ -164,7 +168,7 @@ public class SuperQuery {
 
         if (new Variables(variableDefinitions).hasDefinedFunction()) {
             return selectAggregate(selectQuery);
-        } else if (new Variables(variableDefinitions).hasDefinedDistinct()) { //build a super select
+        } else if (new Variables(variableDefinitions).hasDefinedDistinct()) { // build a super select
             return selectDistinct(selectQuery);
         } else {
             return selectQuery;

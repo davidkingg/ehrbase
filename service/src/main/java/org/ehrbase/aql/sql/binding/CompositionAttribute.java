@@ -24,28 +24,32 @@ import org.ehrbase.aql.sql.queryimpl.*;
  * convert a select or where AQL field into its SQL equivalent for a composition attribute.
  * This applies to standard attributes f.e. c/name/value etc.
  */
-@SuppressWarnings({"java:S1452","java:S3740"})
+@SuppressWarnings({"java:S1452", "java:S3740"})
 public class CompositionAttribute {
 
     private final CompositionAttributeQuery compositionAttributeQuery;
     private final JsonbEntryQuery jsonbEntryQuery;
     private final IQueryImpl.Clause clause;
 
-    public CompositionAttribute(CompositionAttributeQuery compositionAttributeQuery, JsonbEntryQuery jsonbEntryQuery, IQueryImpl.Clause clause) {
+    public CompositionAttribute(
+            CompositionAttributeQuery compositionAttributeQuery,
+            JsonbEntryQuery jsonbEntryQuery,
+            IQueryImpl.Clause clause) {
         this.compositionAttributeQuery = compositionAttributeQuery;
         this.jsonbEntryQuery = jsonbEntryQuery;
         this.clause = clause;
     }
 
-    public MultiFields toSql(I_VariableDefinition variableDefinition, String templateId, String identifier) throws UnknownVariableException {
+    public MultiFields toSql(I_VariableDefinition variableDefinition, String templateId, String identifier)
+            throws UnknownVariableException {
         MultiFields qualifiedAqlFields;
 
         if (variableDefinition.getPath() != null && variableDefinition.getPath().startsWith("content")) {
             qualifiedAqlFields = jsonbEntryQuery.makeField(templateId, identifier, variableDefinition, clause);
-            if (qualifiedAqlFields != null)
-                qualifiedAqlFields.setUseEntryTable(true);
+            if (qualifiedAqlFields != null) qualifiedAqlFields.setUseEntryTable(true);
         } else {
-            qualifiedAqlFields = compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, clause);
+            qualifiedAqlFields =
+                    compositionAttributeQuery.makeField(templateId, identifier, variableDefinition, clause);
         }
         return qualifiedAqlFields;
     }

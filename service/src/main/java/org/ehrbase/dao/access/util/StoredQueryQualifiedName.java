@@ -7,37 +7,38 @@ public class StoredQueryQualifiedName {
     public StoredQueryQualifiedName(String name) {
 
         if (!name.contains("::"))
-            throw new IllegalArgumentException("Qualified name is not valid (https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_query_package):"+name);
+            throw new IllegalArgumentException(
+                    "Qualified name is not valid (https://specifications.openehr.org/releases/SM/latest/openehr_platform.html#_query_package):"
+                            + name);
 
         this.name = name;
     }
 
     public StoredQueryQualifiedName(String reverseDomainName, String semanticId, String semVer) {
-        this.name = reverseDomainName+"::"+semanticId+"/"+semVer;
+        this.name = reverseDomainName + "::" + semanticId + "/" + semVer;
     }
 
-    public String reverseDomainName(){
+    public String reverseDomainName() {
         return name.split("::")[0];
     }
 
-    public String semanticId(){
+    public String semanticId() {
         return (name.split("::")[1]).split("/")[0];
     }
 
-    public String semVer(){
+    public String semVer() {
         String semVer = null;
 
-        if (name.contains("/"))
-            semVer = name.split("/")[1];
+        if (name.contains("/")) semVer = name.split("/")[1];
 
         return semVer;
     }
 
-    public boolean isSetSemVer(){
-       return name.contains("/");
+    public boolean isSetSemVer() {
+        return name.contains("/");
     }
 
-    public String toString(){
+    public String toString() {
         return name;
     }
 }

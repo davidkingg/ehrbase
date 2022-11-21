@@ -23,7 +23,7 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC23 extends QueryProcessorTestBase {
 
-    protected UC23(){
+    protected UC23() {
         this.aql = "SELECT count(e/time_created) FROM EHR e";
         this.expectedOutputWithJson = false;
     }

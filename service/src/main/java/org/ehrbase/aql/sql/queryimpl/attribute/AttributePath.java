@@ -29,10 +29,10 @@ public class AttributePath {
      * return the path without the root part
      * @return
      */
-    public String redux(String path){
+    public String redux(String path) {
 
-        if (path.equals(rootPath)) return ""; //empty non null path to resolve (partial path for canonical result)
+        if (path.equals(rootPath)) return ""; // empty non null path to resolve (partial path for canonical result)
 
-        return path.substring(rootPath.length()+1); //skip trailing '/'
+        return path.substring(rootPath.length() + 1); // skip trailing '/'
     }
 }

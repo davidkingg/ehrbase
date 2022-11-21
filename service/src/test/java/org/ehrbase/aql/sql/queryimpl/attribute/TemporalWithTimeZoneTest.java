@@ -19,6 +19,10 @@
 
 package org.ehrbase.aql.sql.queryimpl.attribute;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
+import static org.junit.Assert.*;
+
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.definition.VariableDefinition;
 import org.ehrbase.aql.sql.queryimpl.IQueryImpl;
@@ -27,16 +31,13 @@ import org.jooq.impl.DSL;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.ehrbase.jooq.pg.Tables.EVENT_CONTEXT;
-import static org.junit.Assert.*;
 public class TemporalWithTimeZoneTest extends TestAqlBase {
 
     FieldResolutionContext fieldResolutionContext;
     JoinSetup joinSetup = new JoinSetup();
 
     @Before
-    public void setUp(){
+    public void setUp() {
         fieldResolutionContext = new FieldResolutionContext(
                 testDomainAccess.getContext(),
                 "test",
@@ -49,18 +50,17 @@ public class TemporalWithTimeZoneTest extends TestAqlBase {
     }
 
     @Test
-    public void testJsonPathBuilding(){
-        Field field = new TemporalWithTimeZone(fieldResolutionContext, joinSetup).forTableField(EVENT_CONTEXT.START_TIME).sqlField();
+    public void testJsonPathBuilding() {
+        Field field = new TemporalWithTimeZone(fieldResolutionContext, joinSetup)
+                .forTableField(EVENT_CONTEXT.START_TIME)
+                .sqlField();
 
         assertNotNull(field);
         assertThat(DSL.select(field).getQuery().toString())
                 .as("test formatting dvdatetime value")
-                .isEqualToIgnoringWhitespace(
-                    "select jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n" +
-                            "  \"ehr\".\"event_context\".\"start_time\", \n" +
-                            "  event_context.START_TIME_TZID\n" +
-                            ") as jsonb),'value') \"/test\""
-                );
+                .isEqualToIgnoringWhitespace("select jsonb_extract_path_text(cast(\"ehr\".\"js_dv_date_time\"(\n"
+                        + "  \"ehr\".\"event_context\".\"start_time\", \n"
+                        + "  event_context.START_TIME_TZID\n"
+                        + ") as jsonb),'value') \"/test\"");
     }
-  
 }

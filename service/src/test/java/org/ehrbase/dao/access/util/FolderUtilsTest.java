@@ -44,7 +44,6 @@ public class FolderUtilsTest {
         I_FolderAccess sub2 = Mockito.mock(I_FolderAccess.class);
         I_FolderAccess sub21 = Mockito.mock(I_FolderAccess.class);
 
-
         UUID sub21Uuid = UUID.randomUUID();
         UUID sub2Uuid = UUID.randomUUID();
         UUID sub1Uuid = UUID.randomUUID();
@@ -57,21 +56,21 @@ public class FolderUtilsTest {
         Mockito.when(currentDir.getFolderId()).thenReturn(UUID.randomUUID());
         Mockito.when(currentDir.getSubfoldersList()).thenReturn(Map.of(sub1Uuid, sub1, sub2Uuid, sub2));
 
-        //Make sure we can find all folders
-        Assertions.assertTrue(
-            FolderUtils.doesAnyIdInFolderStructureMatch(currentDir, new ObjectVersionId(currentDir.getFolderId().toString())));
-        Assertions.assertTrue(
-            FolderUtils.doesAnyIdInFolderStructureMatch(currentDir, new ObjectVersionId(sub1.getFolderId().toString())));
-        Assertions.assertTrue(
-            FolderUtils.doesAnyIdInFolderStructureMatch(currentDir, new ObjectVersionId(sub2.getFolderId().toString())));
-        Assertions.assertTrue(
-            FolderUtils.doesAnyIdInFolderStructureMatch(currentDir, new ObjectVersionId(sub21.getFolderId().toString())));
+        // Make sure we can find all folders
+        Assertions.assertTrue(FolderUtils.doesAnyIdInFolderStructureMatch(
+                currentDir, new ObjectVersionId(currentDir.getFolderId().toString())));
+        Assertions.assertTrue(FolderUtils.doesAnyIdInFolderStructureMatch(
+                currentDir, new ObjectVersionId(sub1.getFolderId().toString())));
+        Assertions.assertTrue(FolderUtils.doesAnyIdInFolderStructureMatch(
+                currentDir, new ObjectVersionId(sub2.getFolderId().toString())));
+        Assertions.assertTrue(FolderUtils.doesAnyIdInFolderStructureMatch(
+                currentDir, new ObjectVersionId(sub21.getFolderId().toString())));
 
-        //a random UUID should return false
-        Assertions.assertFalse(
-            FolderUtils.doesAnyIdInFolderStructureMatch(currentDir, new ObjectVersionId(UUID.randomUUID().toString())));
-        Assertions.assertFalse(
-            FolderUtils.doesAnyIdInFolderStructureMatch(null, new ObjectVersionId(UUID.randomUUID().toString())));
+        // a random UUID should return false
+        Assertions.assertFalse(FolderUtils.doesAnyIdInFolderStructureMatch(
+                currentDir, new ObjectVersionId(UUID.randomUUID().toString())));
+        Assertions.assertFalse(FolderUtils.doesAnyIdInFolderStructureMatch(
+                null, new ObjectVersionId(UUID.randomUUID().toString())));
         Assertions.assertFalse(FolderUtils.doesAnyIdInFolderStructureMatch(currentDir, null));
     }
 }

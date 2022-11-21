@@ -25,12 +25,11 @@ public class JsonbSelect {
 
     private final List<String> pathSegments;
 
-
     public JsonbSelect(List<String> pathSegments) {
         this.pathSegments = pathSegments;
     }
 
-    public String field(){
+    public String field() {
         return "'{" + String.join(",", pathSegments) + "}'";
     }
 }

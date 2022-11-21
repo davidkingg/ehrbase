@@ -63,7 +63,11 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
     private final KnowledgeCacheService knowledgeCacheService;
     private final CompositionService compositionService;
 
-    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService, DSLContext context, ServerConfig serverConfig, CompositionService compositionService) {
+    public TemplateServiceImp(
+            KnowledgeCacheService knowledgeCacheService,
+            DSLContext context,
+            ServerConfig serverConfig,
+            CompositionService compositionService) {
         super(knowledgeCacheService, context, serverConfig);
         this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
         this.compositionService = compositionService;
@@ -71,7 +75,9 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
 
     @Override
     public List<TemplateMetaDataDto> getAllTemplates() {
-        return knowledgeCacheService.listAllOperationalTemplates().stream().map(this::mapToDto).collect(Collectors.toList());
+        return knowledgeCacheService.listAllOperationalTemplates().stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
     private TemplateMetaDataDto mapToDto(TemplateMetaData data) {
@@ -79,22 +85,22 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
         dto.setCreatedOn(data.getCreatedOn());
 
         Optional<OPERATIONALTEMPLATE> operationalTemplate = Optional.ofNullable(data.getOperationaltemplate());
-        dto.setTemplateId(
-                operationalTemplate.map(OPERATIONALTEMPLATE::getTemplateId)
-                        .map(OBJECTID::getValue)
-                        .orElse(null));
-        dto.setArchetypeId(
-                operationalTemplate.map(OPERATIONALTEMPLATE::getDefinition)
-                        .map(CARCHETYPEROOT::getArchetypeId)
-                        .map(OBJECTID::getValue)
-                        .orElse(null));
+        dto.setTemplateId(operationalTemplate
+                .map(OPERATIONALTEMPLATE::getTemplateId)
+                .map(OBJECTID::getValue)
+                .orElse(null));
+        dto.setArchetypeId(operationalTemplate
+                .map(OPERATIONALTEMPLATE::getDefinition)
+                .map(CARCHETYPEROOT::getArchetypeId)
+                .map(OBJECTID::getValue)
+                .orElse(null));
 
         dto.setConcept(operationalTemplate.map(OPERATIONALTEMPLATE::getConcept).orElse(null));
         return dto;
     }
 
-  @Override
-  public Composition buildExample(String templateId) {
+    @Override
+    public Composition buildExample(String templateId) {
         WebTemplate webTemplate = findTemplate(templateId);
         Composition composition = WebTemplateSkeletonBuilder.build(webTemplate, false);
 
@@ -102,18 +108,18 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
 
         DefaultValues defaultValues = new DefaultValues();
         defaultValues.addDefaultValue(DefaultValuePath.TIME, OffsetDateTime.now());
-    defaultValues.addDefaultValue(
-        DefaultValuePath.LANGUAGE,
-        FlatHelper.findEnumValueOrThrow(webTemplate.getDefaultLanguage(), Language.class));
+        defaultValues.addDefaultValue(
+                DefaultValuePath.LANGUAGE,
+                FlatHelper.findEnumValueOrThrow(webTemplate.getDefaultLanguage(), Language.class));
         defaultValues.addDefaultValue(DefaultValuePath.TERRITORY, Territory.DE);
-    defaultValues.addDefaultValue(DefaultValuePath.SETTING, Setting.OTHER_CARE);
-    defaultValues.addDefaultValue(DefaultValuePath.COMPOSER_NAME, "Max Mustermann");
+        defaultValues.addDefaultValue(DefaultValuePath.SETTING, Setting.OTHER_CARE);
+        defaultValues.addDefaultValue(DefaultValuePath.COMPOSER_NAME, "Max Mustermann");
 
         ExampleGeneratorToCompositionWalker walker = new ExampleGeneratorToCompositionWalker();
         walker.walk(composition, object, webTemplate, defaultValues, templateId);
 
-    composition.setTerritory(Territory.DE.toCodePhrase());
-    return composition;
+        composition.setTerritory(Territory.DE.toCodePhrase());
+        return composition;
     }
 
     @Override
@@ -128,12 +134,14 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
     }
 
     @Override
-    public String findOperationalTemplate(String templateId, OperationalTemplateFormat format) throws ObjectNotFoundException, InvalidApiParameterException, InternalServerException {
+    public String findOperationalTemplate(String templateId, OperationalTemplateFormat format)
+            throws ObjectNotFoundException, InvalidApiParameterException, InternalServerException {
         if (format != OperationalTemplateFormat.XML) {
             throw new InvalidApiParameterException("Requested operational template type not supported");
         }
 
-        Optional<OPERATIONALTEMPLATE> existingTemplate = this.knowledgeCacheService.retrieveOperationalTemplate(templateId);
+        Optional<OPERATIONALTEMPLATE> existingTemplate =
+                this.knowledgeCacheService.retrieveOperationalTemplate(templateId);
 
         return existingTemplate
                 .map(template -> {
@@ -141,7 +149,8 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
                     opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
                     return template.xmlText(opts);
                 })
-                .orElseThrow(() -> new ObjectNotFoundException("template", "Template with the specified id does not exist"));
+                .orElseThrow(
+                        () -> new ObjectNotFoundException("template", "Template with the specified id does not exist"));
     }
 
     @Override
@@ -156,9 +165,8 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
     public boolean adminDeleteTemplate(String templateId) {
         Optional<OPERATIONALTEMPLATE> existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId);
         if (existingTemplate.isEmpty()) {
-            throw new ObjectNotFoundException("ADMIN TEMPLATE", String.format(
-                    "Operational template with id %s not found.", templateId
-            ));
+            throw new ObjectNotFoundException(
+                    "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId));
         }
 
         // Delete template if not used
@@ -175,9 +183,7 @@ public class TemplateServiceImp extends BaseServiceImp implements TemplateServic
         // Check if template exists
         if (existingTemplate.isEmpty()) {
             throw new ObjectNotFoundException(
-                    "ADMIN TEMPLATE UPDATE",
-                    String.format("Template with id %s does not exist", templateId)
-            );
+                    "ADMIN TEMPLATE UPDATE", String.format("Template with id %s does not exist", templateId));
         }
 
         // Replace content

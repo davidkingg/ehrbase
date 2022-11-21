@@ -13,16 +13,14 @@ public class WhereEvaluation {
         this.whereItems = whereItems;
     }
 
-    public boolean requiresSQL(){
+    public boolean requiresSQL() {
 
         List<String> operators = Arrays.asList(operatorRequiringSQL);
 
-        for (Object item: whereItems){
-            if (item instanceof String){ //ignore variable definition
-                String testItem = ((String)item).toUpperCase();
-                if (operators.contains(testItem))
-                    return true;
-
+        for (Object item : whereItems) {
+            if (item instanceof String) { // ignore variable definition
+                String testItem = ((String) item).toUpperCase();
+                if (operators.contains(testItem)) return true;
             }
         }
         return false;

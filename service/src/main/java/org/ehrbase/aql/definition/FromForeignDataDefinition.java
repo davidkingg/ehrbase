@@ -31,9 +31,10 @@ import java.util.List;
 public class FromForeignDataDefinition implements I_FromEntityDefinition {
 
     public enum FDType {
-
-        PERSON, AGENT, ORGANISATION, GROUP
-
+        PERSON,
+        AGENT,
+        ORGANISATION,
+        GROUP
     }
 
     public static class NodePredicate {

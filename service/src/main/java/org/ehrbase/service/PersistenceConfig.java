@@ -18,7 +18,7 @@
 
 package org.ehrbase.service;
 
-
+import javax.sql.DataSource;
 import org.jooq.ExecuteContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.*;
@@ -33,8 +33,6 @@ import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.sql.DataSource;
-
 @Configuration
 @EnableTransactionManagement
 public class PersistenceConfig {
@@ -43,18 +41,15 @@ public class PersistenceConfig {
         @Override
         public void exception(ExecuteContext context) {
             SQLDialect dialect = context.configuration().dialect();
-            SQLExceptionTranslator translator
-                    = new SQLErrorCodeSQLExceptionTranslator(dialect.name());
-            context.exception(translator
-                    .translate("Access database using Jooq", context.sql(), context.sqlException()));
+            SQLExceptionTranslator translator = new SQLErrorCodeSQLExceptionTranslator(dialect.name());
+            context.exception(
+                    translator.translate("Access database using Jooq", context.sql(), context.sqlException()));
         }
     }
-
 
     @Qualifier("dataSource")
     @Autowired
     private DataSource dataSource;
-
 
     public TransactionAwareDataSourceProxy transactionAwareDataSource() {
         return new TransactionAwareDataSourceProxy(dataSource);
@@ -86,7 +81,6 @@ public class PersistenceConfig {
         DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
         jooqConfiguration.set(connectionProvider());
         jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
-
 
         SQLDialect dialect = SQLDialect.POSTGRES;
         jooqConfiguration.set(dialect);

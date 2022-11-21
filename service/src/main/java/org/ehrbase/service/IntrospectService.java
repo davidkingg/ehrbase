@@ -18,12 +18,11 @@
 
 package org.ehrbase.service;
 
+import java.util.List;
+import java.util.UUID;
 import org.ehrbase.aql.sql.queryimpl.ItemInfo;
 import org.ehrbase.ehr.knowledge.I_KnowledgeCache;
 import org.ehrbase.webtemplate.model.WebTemplate;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface IntrospectService {
     WebTemplate getQueryOptMetaData(UUID uuid);

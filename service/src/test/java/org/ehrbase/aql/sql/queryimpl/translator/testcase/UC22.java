@@ -23,12 +23,12 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC22 extends QueryProcessorTestBase {
 
-    protected UC22(){
-        this.aql = "select count(a/description[at0001]/items[at0004]/value/magnitude," +
-                "a/description[at0001]/items[at0002]/value/value)" +
-                "from EHR e " +
-                "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  " +
-                "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+    protected UC22() {
+        this.aql = "select count(a/description[at0001]/items[at0004]/value/magnitude,"
+                + "a/description[at0001]/items[at0002]/value/value)"
+                + "from EHR e "
+                + "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1]  "
+                + "contains ACTION a[openEHR-EHR-ACTION.immunisation_procedure.v1]";
         this.expectedOutputWithJson = false;
     }
 }

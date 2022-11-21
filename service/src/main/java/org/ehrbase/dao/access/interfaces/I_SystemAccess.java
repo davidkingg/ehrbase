@@ -15,12 +15,11 @@
  */
 package org.ehrbase.dao.access.interfaces;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.jooq.SystemAccess;
+import static org.ehrbase.jooq.pg.Tables.SYSTEM;
 
 import java.util.UUID;
-
-import static org.ehrbase.jooq.pg.Tables.SYSTEM;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.jooq.SystemAccess;
 
 /**
  * System access layer interface.

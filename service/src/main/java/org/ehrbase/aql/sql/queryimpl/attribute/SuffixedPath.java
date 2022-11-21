@@ -10,8 +10,4 @@ public class SuffixedPath {
     public SuffixedPath(String path) {
         this.path = path;
     }
-
-
-
-
 }

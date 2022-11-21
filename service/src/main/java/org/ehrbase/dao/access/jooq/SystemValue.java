@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum SystemValue {
-
     LANGUAGE("language"),
     CHARSET("charset"),
     ENCODING("encoding"),
@@ -45,9 +44,23 @@ public enum SystemValue {
     private static final Map<String, SystemValue> idMap;
 
     static {
-        SystemValue[] list = {LANGUAGE, CHARSET, ENCODING, TERMINOLOGY_SERVICE,
-                MEASUREMENT_SERVICE, SUBJECT, PROVIDER, COMPOSER, TERRITORY, CONTEXT,
-                CATEGORY, NAME, RM_VERSION, UID, FEEDER_AUDIT, LINKS
+        SystemValue[] list = {
+            LANGUAGE,
+            CHARSET,
+            ENCODING,
+            TERMINOLOGY_SERVICE,
+            MEASUREMENT_SERVICE,
+            SUBJECT,
+            PROVIDER,
+            COMPOSER,
+            TERRITORY,
+            CONTEXT,
+            CATEGORY,
+            NAME,
+            RM_VERSION,
+            UID,
+            FEEDER_AUDIT,
+            LINKS
         };
         idMap = new HashMap<>();
         for (SystemValue value : list) {

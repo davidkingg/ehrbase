@@ -38,13 +38,15 @@ public class EventContextFactory {
         PartyIdentified healthcareFacility = new PartyIdentified(partyRef, "FACILITY", null);
         DateTime timenow = DateTime.now();
         DvCodedText concept = new DvCodedText("Other Care", new CodePhrase(new TerminologyId("openehr"), "238"));
-        return new EventContext(healthcareFacility, new DvDateTime(timenow.toString()), null, null, "TEST LAB", concept, null);
+        return new EventContext(
+                healthcareFacility, new DvDateTime(timenow.toString()), null, null, "TEST LAB", concept, null);
     }
 
     public EventContext makeNull() {
         PartyRef partyRef = new PartyRef(new HierObjectId("ref"), "null", "null");
         PartyIdentified healthcareFacility = new PartyIdentified(partyRef, "null", null);
         DvCodedText concept = new DvCodedText("Other Care", new CodePhrase(new TerminologyId("openehr"), "238"));
-        return new EventContext(healthcareFacility, new DvDateTime(new DateTime(0L).toString()), null, null, null, concept, null);
+        return new EventContext(
+                healthcareFacility, new DvDateTime(new DateTime(0L).toString()), null, null, null, concept, null);
     }
 }

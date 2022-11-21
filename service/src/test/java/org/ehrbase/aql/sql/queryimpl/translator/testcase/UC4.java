@@ -23,10 +23,10 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC4 extends QueryProcessorTestBase {
 
-    protected UC4(){
-        this.aql = "select c/composer/name from EHR e " +
-                "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1] " +
-                "order by c/context/start_time/value DESC";
+    protected UC4() {
+        this.aql = "select c/composer/name from EHR e "
+                + "contains COMPOSITION c[openEHR-EHR-COMPOSITION.health_summary.v1] "
+                + "order by c/context/start_time/value DESC";
         this.expectedOutputWithJson = false;
     }
 }

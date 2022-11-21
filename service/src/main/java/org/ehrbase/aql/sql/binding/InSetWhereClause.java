@@ -39,8 +39,7 @@ public class InSetWhereClause {
 
     public boolean isInSubQueryExpression(int cursor) {
 
-        if (cursor + 1 >= whereItems.size() || cursor + 2 >= whereItems.size())
-            return false;
+        if (cursor + 1 >= whereItems.size() || cursor + 2 >= whereItems.size()) return false;
         if (whereItems.get(cursor + 1) instanceof String) {
             String lookahead1 = ((String) whereItems.get(cursor + 1)).strip();
             String lookahead2;

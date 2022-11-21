@@ -22,6 +22,9 @@ import com.jayway.jsonpath.JsonPath;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -33,10 +36,6 @@ import org.ehrbase.dao.access.interfaces.I_OpenehrTerminologyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Luis Marco-Ruiz
@@ -85,7 +84,7 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
 
     @Override
     public List<DvCodedText> expandWithParameters(final String valueSetId, String... operationParams) {
-        //build URL
+        // build URL
         String urlTsServer = props.getTsUrl();
         urlTsServer += "ValueSet/$" + operationParams[0] + "?url=" + valueSetId;
 
@@ -115,7 +114,6 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
     public DvCodedText lookUp(final String conceptId) {
         // TODO Auto-generated method stub
         return null;
-
     }
 
     @Override
@@ -133,7 +131,7 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
 
     @Override
     public Boolean validate(String... operationParams) {
-        //build URL
+        // build URL
         String urlTsServer = props.getTsUrl();
         urlTsServer += "ValueSet/$" + "validate-code" + "?" + operationParams[0];
 
@@ -158,7 +156,8 @@ public class FhirTerminologyServerR4AdaptorImpl implements I_OpenehrTerminologyS
         String responseBody = EntityUtils.toString(response.getEntity());
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != HttpStatus.SC_OK) {
-            throw new InternalServerException("Error response received from FHIR terminology server. HTTP status: " + statusCode + ". Body: " + responseBody);
+            throw new InternalServerException("Error response received from FHIR terminology server. HTTP status: "
+                    + statusCode + ". Body: " + responseBody);
         }
 
         return responseBody;

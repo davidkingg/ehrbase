@@ -19,14 +19,12 @@
 
 package org.ehrbase.aql.sql.queryimpl;
 
+import static org.ehrbase.aql.sql.queryimpl.EntryAttributeMapper.OTHER_PARTICIPATIONS;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.ehrbase.aql.sql.queryimpl.EntryAttributeMapper.OTHER_PARTICIPATIONS;
-import static org.ehrbase.aql.sql.queryimpl.QueryImplConstants.AQL_NODE_ITERATIVE_MARKER;
-
-public class NormalizedOtherParticipations extends NormalizedRmAttributePath{
+public class NormalizedOtherParticipations extends NormalizedRmAttributePath {
 
     public NormalizedOtherParticipations(List<String> pathSegments) {
         super(pathSegments);
@@ -35,7 +33,8 @@ public class NormalizedOtherParticipations extends NormalizedRmAttributePath{
     public List<String> transform() {
         List<String> resultingPaths = new ArrayList<>();
 
-        if (pathSegments.size() >= 1 && pathSegments.get(pathSegments.size() - 1).contains(OTHER_PARTICIPATIONS)) {
+        if (pathSegments.size() >= 1
+                && pathSegments.get(pathSegments.size() - 1).contains(OTHER_PARTICIPATIONS)) {
             String otherParticipationsField = pathSegments.get(pathSegments.size() - 1);
             List<String> otherParticipations = new ArrayList<>(List.of(otherParticipationsField.split(",")));
             resultingPaths.addAll(pathSegments.subList(0, pathSegments.size() - 2));
@@ -44,5 +43,4 @@ public class NormalizedOtherParticipations extends NormalizedRmAttributePath{
 
         return resultingPaths;
     }
-
 }

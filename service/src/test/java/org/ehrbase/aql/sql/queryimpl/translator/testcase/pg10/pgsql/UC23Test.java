@@ -19,24 +19,24 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC23;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class UC23Test extends UC23 {
 
-    public UC23Test(){
+    public UC23Test() {
         super();
         this.expectedSqlExpression =
-                "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select cast(\"ehr\".\"js_dv_date_time\"(\n" +
-                        "  \"ehr_join\".\"date_created\", \n" +
-                        "  \"ehr_join\".\"date_created_tzid\"\n" +
-                        ") as varchar) as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
+                "select count(DISTINCT \"_FCT_ARG_0\") as \"count\" from (select cast(\"ehr\".\"js_dv_date_time\"(\n"
+                        + "  \"ehr_join\".\"date_created\", \n"
+                        + "  \"ehr_join\".\"date_created_tzid\"\n"
+                        + ") as varchar) as \"_FCT_ARG_0\" from \"ehr\".\"ehr\" as \"ehr_join\") as \"\"";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

@@ -15,11 +15,9 @@
  */
 package org.ehrbase.ehr.util;
 
-
-import org.ehrbase.webtemplate.parser.AqlPath;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import org.ehrbase.webtemplate.parser.AqlPath;
 
 /**
  * Utility class for path manipulation.
@@ -30,13 +28,11 @@ import java.util.stream.Collectors;
  */
 public class LocatableHelper {
 
-    private LocatableHelper() {
-    }
+    private LocatableHelper() {}
 
     public static List<String> dividePathIntoSegments(String path) {
         var aqlPath = AqlPath.parse(path);
-        return aqlPath.getNodes()
-                .stream()
+        return aqlPath.getNodes().stream()
                 .map(aqlNode -> {
                     StringBuilder sb = new StringBuilder();
                     aqlNode.appendFormat(sb, AqlPath.OtherPredicatesFormat.SHORTED);

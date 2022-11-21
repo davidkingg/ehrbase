@@ -5,7 +5,12 @@ package org.ehrbase.aql.containment;
  */
 public class ContainOperator {
 
-    public enum OPERATOR {AND, OR, XOR, NOT}
+    public enum OPERATOR {
+        AND,
+        OR,
+        XOR,
+        NOT
+    }
 
     private OPERATOR operator;
 
@@ -13,7 +18,7 @@ public class ContainOperator {
         this.operator = OPERATOR.valueOf(operator.toUpperCase());
     }
 
-    public OPERATOR operator(){
+    public OPERATOR operator() {
         return operator;
     }
 
@@ -21,7 +26,7 @@ public class ContainOperator {
         return operator.name();
     }
 
-    public boolean isEqualTo(ContainOperator another){
+    public boolean isEqualTo(ContainOperator another) {
         return this.getOperator().equals(another.getOperator());
     }
 }

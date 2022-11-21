@@ -18,23 +18,20 @@
 
 package org.ehrbase.service;
 
+import java.io.File;
 import org.apache.commons.io.IOUtils;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.cache.CacheOptions;
 import org.ehrbase.opt.query.TemplateTestData;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
-
 /**
  * Created by christian on 5/10/2018.
  */
-
 public class KnowledgeCacheHelper {
 
-
-    public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule) throws Exception {
-
+    public static KnowledgeCacheService buildKnowledgeCache(TemporaryFolder folder, CacheRule cacheRule)
+            throws Exception {
 
         File operationalTemplatesemplates = folder.newFolder("operational_templates");
 
@@ -42,8 +39,10 @@ public class KnowledgeCacheHelper {
 
         templateFileStorageService.setOptPath(operationalTemplatesemplates.getPath());
 
-        KnowledgeCacheService knowledgeCacheService = new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheOptions());
-        knowledgeCacheService.addOperationalTemplate(IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
+        KnowledgeCacheService knowledgeCacheService =
+                new KnowledgeCacheService(templateFileStorageService, cacheRule.cacheManager, new CacheOptions());
+        knowledgeCacheService.addOperationalTemplate(
+                IOUtils.toByteArray(TemplateTestData.IMMUNISATION_SUMMARY.getStream()));
         return knowledgeCacheService;
     }
 
@@ -57,9 +56,7 @@ public class KnowledgeCacheHelper {
             }
 
             @Override
-            public void setPort(int port) {
-
-            }
+            public void setPort(int port) {}
 
             @Override
             public String getNodename() {
@@ -67,9 +64,7 @@ public class KnowledgeCacheHelper {
             }
 
             @Override
-            public void setNodename(String nodename) {
-
-            }
+            public void setNodename(String nodename) {}
 
             @Override
             public String getAqlIterationSkipList() {
@@ -97,5 +92,4 @@ public class KnowledgeCacheHelper {
             }
         };
     }
-
 }

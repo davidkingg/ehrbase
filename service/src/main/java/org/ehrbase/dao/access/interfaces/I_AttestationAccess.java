@@ -19,10 +19,9 @@
 package org.ehrbase.dao.access.interfaces;
 
 import com.nedap.archie.rm.generic.Attestation;
-import org.ehrbase.dao.access.jooq.AttestationAccess;
-
 import java.util.List;
 import java.util.UUID;
+import org.ehrbase.dao.access.jooq.AttestationAccess;
 
 public interface I_AttestationAccess extends I_SimpleCRUD {
 

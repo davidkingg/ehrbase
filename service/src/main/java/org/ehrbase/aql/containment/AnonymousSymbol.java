@@ -16,7 +16,7 @@ public class AnonymousSymbol {
         this.fieldId = fieldId;
     }
 
-    public String generate(String prefix){
+    public String generate(String prefix) {
         return prefix + "_" + (++fieldId);
     }
 }

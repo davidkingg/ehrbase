@@ -18,11 +18,11 @@
 
 package org.ehrbase.service;
 
+import static org.junit.Assert.*;
+
 import org.ehrbase.terminology.openehr.TerminologyService;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class TerminologyServiceTest {
 

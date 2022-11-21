@@ -19,29 +19,29 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.sql.queryimpl.QueryImplConstants;
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC32;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@Ignore ("not yet supported")
+@Ignore("not yet supported")
 public class UC32Test extends UC32 {
 
-    public UC32Test(){
+    public UC32Test() {
         super();
-        this.expectedSqlExpression =
-                "select "+ QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION+"(ehr.js_ehr(ehr_join.id,'local')::jsonb #>'{folders}') #>>'{name,value}' as \"/folders/name/value\"" +
-                        " from \"ehr\".\"ehr\" as \"ehr_join\"" +
-                        " where (" +
-                        "   'case1' IN (SELECT regexp_split_to_array('case1,case2', ','))" +
-                        "        and " +
-                        "       \"ehr_join\".\"id\"='c2561bab-4d2b-4ffd-a893-4382e9048f8c')";
+        this.expectedSqlExpression = "select " + QueryImplConstants.AQL_NODE_ITERATIVE_FUNCTION
+                + "(ehr.js_ehr(ehr_join.id,'local')::jsonb #>'{folders}') #>>'{name,value}' as \"/folders/name/value\""
+                + " from \"ehr\".\"ehr\" as \"ehr_join\""
+                + " where ("
+                + "   'case1' IN (SELECT regexp_split_to_array('case1,case2', ','))"
+                + "        and "
+                + "       \"ehr_join\".\"id\"='c2561bab-4d2b-4ffd-a893-4382e9048f8c')";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

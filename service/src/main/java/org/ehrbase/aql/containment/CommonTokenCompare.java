@@ -28,15 +28,15 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  */
 public class CommonTokenCompare {
 
-  private final ParseTree token;
+    private final ParseTree token;
 
-  public CommonTokenCompare(ParseTree token) {
-    this.token = token;
-  }
+    public CommonTokenCompare(ParseTree token) {
+        this.token = token;
+    }
 
-  public boolean isEquals(int value) {
-    return (token instanceof TerminalNode
-        && (token.getPayload()) instanceof CommonToken
-        && ((CommonToken) (token.getPayload())).getType() == value);
-  }
+    public boolean isEquals(int value) {
+        return (token instanceof TerminalNode
+                && (token.getPayload()) instanceof CommonToken
+                && ((CommonToken) (token.getPayload())).getType() == value);
+    }
 }

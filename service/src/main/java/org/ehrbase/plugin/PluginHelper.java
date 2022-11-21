@@ -21,9 +21,9 @@ package org.ehrbase.plugin;
  */
 public class PluginHelper {
 
-  private PluginHelper() {
-    // Util class
-  }
+    private PluginHelper() {
+        // Util class
+    }
 
-  public static final String PLUGIN_MANAGER_PREFIX = "plugin-manager";
+    public static final String PLUGIN_MANAGER_PREFIX = "plugin-manager";
 }

@@ -19,23 +19,23 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC7;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class UC7Test extends UC7 {
 
-    public UC7Test(){
+    public UC7Test() {
         super();
         this.expectedSqlExpression =
-                "select (ARRAY.COLUMN#>>'{/description[at0001],/items[at0002],0,/value,value}')::TEXT as \"/description[at0001]/items[at0002]/value/value\" from \"ehr\".\"entry\" join lateral (\n" +
-                        "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)) \n" +
-                        " AS COLUMN) as \"ARRAY\" on true where (\"ehr\".\"entry\".\"template_id\" = ? and ((ARRAY.COLUMN#>>'{/description[at0001],/items[at0002],0,/value,value}')::TEXT  = 'Hepatitis A'))";
+                "select (ARRAY.COLUMN#>>'{/description[at0001],/items[at0002],0,/value,value}')::TEXT as \"/description[at0001]/items[at0002]/value/value\" from \"ehr\".\"entry\" join lateral (\n"
+                        + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)) \n"
+                        + " AS COLUMN) as \"ARRAY\" on true where (\"ehr\".\"entry\".\"template_id\" = ? and ((ARRAY.COLUMN#>>'{/description[at0001],/items[at0002],0,/value,value}')::TEXT  = 'Hepatitis A'))";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

@@ -17,14 +17,14 @@
  */
 package org.ehrbase.aql.sql.queryimpl.attribute.partyref;
 
+import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
+
 import org.ehrbase.aql.sql.queryimpl.attribute.FieldResolutionContext;
 import org.ehrbase.aql.sql.queryimpl.attribute.IRMObjectAttribute;
 import org.ehrbase.aql.sql.queryimpl.attribute.JoinSetup;
 import org.ehrbase.aql.sql.queryimpl.value_field.GenericJsonField;
 import org.jooq.Field;
 import org.jooq.TableField;
-
-import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
 public class PartyIdentifiedJson extends GenericJsonField {
 
@@ -41,5 +41,4 @@ public class PartyIdentifiedJson extends GenericJsonField {
     public IRMObjectAttribute forTableField(TableField tableField) {
         return this;
     }
-
 }

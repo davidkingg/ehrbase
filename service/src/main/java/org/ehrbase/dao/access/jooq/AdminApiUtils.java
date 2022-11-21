@@ -1,5 +1,8 @@
 package org.ehrbase.dao.access.jooq;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.tables.AdminDeleteCompositionHistory;
@@ -8,10 +11,6 @@ import org.ehrbase.jooq.pg.tables.AdminDeleteFolderObjRefHistory;
 import org.ehrbase.jooq.pg.tables.records.*;
 import org.jooq.DSLContext;
 import org.jooq.Result;
-
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * Util class to offer reusable methods in the scope of the Admin API.
@@ -40,7 +39,8 @@ public class AdminApiUtils {
             deleteAudit(del.getAudit(), "Composition", false);
             // invoke deletion of attestation, if available
             if (del.getAttestation() != null) {
-                Result<AdminDeleteAttestationRecord> delAttest = Routines.adminDeleteAttestation(ctx.configuration(), del.getAttestation());
+                Result<AdminDeleteAttestationRecord> delAttest =
+                        Routines.adminDeleteAttestation(ctx.configuration(), del.getAttestation());
                 delAttest.forEach(attest -> deleteAudit(attest.getAudit(), "Attestation", false));
             }
 
@@ -59,8 +59,7 @@ public class AdminApiUtils {
 
         // cleanup of composition auxiliary objects
         int res = ctx.selectQuery(new AdminDeleteCompositionHistory().call(id)).execute();
-        if (res != 1)
-            throw new InternalServerException("Admin deletion of Composition auxiliary objects failed!");
+        if (res != 1) throw new InternalServerException("Admin deletion of Composition auxiliary objects failed!");
     }
 
     /**
@@ -73,7 +72,6 @@ public class AdminApiUtils {
         Result<AdminDeleteAuditRecord> delAudit = Routines.adminDeleteAudit(ctx.configuration(), id);
         if (resultCanBeEmpty.equals(false) && delAudit.size() != 1)
             throw new InternalServerException("Admin deletion of " + context + " Audit failed!");
-
     }
 
     /**
@@ -119,12 +117,13 @@ public class AdminApiUtils {
         });
 
         // invoke both *_HISTORY cleaning functions
-        folders.forEach(folder -> ctx.selectQuery(new AdminDeleteFolderHistory().call(folder)).execute());
-        contribs.forEach(contrib -> ctx.selectQuery(new AdminDeleteFolderObjRefHistory().call(contrib)).execute());
+        folders.forEach(folder ->
+                ctx.selectQuery(new AdminDeleteFolderHistory().call(folder)).execute());
+        contribs.forEach(contrib -> ctx.selectQuery(new AdminDeleteFolderObjRefHistory().call(contrib))
+                .execute());
 
         // invoke contribution deletion - if set to true
-        if (deleteContributions.equals(true))
-            contribs.forEach(contrib -> deleteContribution(contrib, null, false));
+        if (deleteContributions.equals(true)) contribs.forEach(contrib -> deleteContribution(contrib, null, false));
 
         // invoke audit deletion
         audits.forEach(audit -> deleteAudit(audit, "Folder", false));

@@ -26,7 +26,7 @@ import org.jooq.Field;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 
-@SuppressWarnings({"java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3740", "java:S1452"})
 public class SystemAttribute extends RMObjectAttribute {
 
     protected TableField tableField;
@@ -37,7 +37,7 @@ public class SystemAttribute extends RMObjectAttribute {
 
     @Override
     public Field<?> sqlField() {
-        return as(DSL.field(JoinBinder.systemRecordTable.getName()+"."+tableField.getName()));
+        return as(DSL.field(JoinBinder.systemRecordTable.getName() + "." + tableField.getName()));
     }
 
     @Override

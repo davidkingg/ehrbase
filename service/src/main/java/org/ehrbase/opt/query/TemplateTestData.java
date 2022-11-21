@@ -23,7 +23,6 @@ import java.io.InputStream;
 public enum TemplateTestData {
     IMMUNISATION_SUMMARY("IDCR - Immunisation summary.v0.opt");
 
-
     private final String filename;
 
     TemplateTestData(String filename) {

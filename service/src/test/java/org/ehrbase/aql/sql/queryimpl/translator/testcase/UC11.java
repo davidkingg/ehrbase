@@ -23,7 +23,7 @@ import org.ehrbase.aql.sql.queryimpl.translator.QueryProcessorTestBase;
 
 public abstract class UC11 extends QueryProcessorTestBase {
 
-    protected UC11(){
+    protected UC11() {
         this.aql = "select TOP 5 e/ehr_id/value from EHR e ";
         this.expectedOutputWithJson = false;
     }

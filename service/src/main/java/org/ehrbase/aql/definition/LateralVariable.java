@@ -29,7 +29,7 @@ public class LateralVariable {
         this.variableId = variableId;
     }
 
-    public String alias(){
+    public String alias() {
         return tableName + "." + variableId + " ";
     }
 }

@@ -18,16 +18,14 @@
 
 package org.ehrbase.aql.definition;
 
-import org.jooq.DataType;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.jooq.DataType;
 
 public class I_VariableDefinitionHelper {
-    private I_VariableDefinitionHelper() {
-    }
+    private I_VariableDefinitionHelper() {}
 
     public static void checkEqualWithoutFuncParameters(I_VariableDefinition actual, I_VariableDefinition expected) {
         assertThat(actual.getAlias()).isEqualTo(expected.getAlias());
@@ -38,7 +36,8 @@ public class I_VariableDefinitionHelper {
         assertThat(actual.isFunction()).isEqualTo(expected.isFunction());
     }
 
-    public static I_VariableDefinition build(String path, String alias, String identifier, boolean distinct, boolean function, boolean extension) {
+    public static I_VariableDefinition build(
+            String path, String alias, String identifier, boolean distinct, boolean function, boolean extension) {
         return new I_VariableDefinition() {
             @Override
             public String getPath() {
@@ -76,9 +75,7 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition) {
-
-            }
+            public void setLateralJoinTable(String templateId, LateralJoinDefinition lateralJoinDefinition) {}
 
             @Override
             public boolean isDistinct() {
@@ -111,24 +108,16 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public void setPath(String path) {
-
-            }
+            public void setPath(String path) {}
 
             @Override
-            public void setDistinct(boolean distinct) {
-
-            }
+            public void setDistinct(boolean distinct) {}
 
             @Override
-            public void setHidden(boolean hidden) {
-
-            }
+            public void setHidden(boolean hidden) {}
 
             @Override
-            public void setAlias(String alias) {
-
-            }
+            public void setAlias(String alias) {}
 
             @Override
             public boolean isConstant() {
@@ -161,9 +150,7 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public void setSelectType(DataType castTypeAs) {
-
-            }
+            public void setSelectType(DataType castTypeAs) {}
 
             @Override
             public DataType getSelectType() {
@@ -176,10 +163,7 @@ public class I_VariableDefinitionHelper {
             }
 
             @Override
-            public void setVoidAlias(boolean isVoidAlias) {
-
-            }
+            public void setVoidAlias(boolean isVoidAlias) {}
         };
     }
-
 }

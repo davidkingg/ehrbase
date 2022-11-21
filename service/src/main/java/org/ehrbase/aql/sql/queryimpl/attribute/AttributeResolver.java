@@ -31,7 +31,4 @@ public abstract class AttributeResolver implements RMAttributeResolver {
         this.fieldResolutionContext = fieldResolutionContext;
         this.joinSetup = joinSetup;
     }
-
-
-
 }

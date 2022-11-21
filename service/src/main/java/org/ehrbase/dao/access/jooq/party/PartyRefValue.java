@@ -45,20 +45,21 @@ class PartyRefValue {
      * extract the attributes of party_ref
      * @return
      */
-    PartyRefValue attributes(){
+    PartyRefValue attributes() {
 
-        if (partyProxy.getExternalRef() == null) //PartySelf f.e.
-            return this;
+        if (partyProxy.getExternalRef() == null) // PartySelf f.e.
+        return this;
 
         PartyRef partyRef = partyProxy.getExternalRef();
 
         namespace = partyRef != null ? partyRef.getNamespace() : null;
         ObjectId objectId = partyRef.getId();
         value = objectId != null ? objectId.getValue() : null;
-        if (objectId != null && objectId instanceof GenericId)
-            scheme = ((GenericId)objectId).getScheme();
+        if (objectId != null && objectId instanceof GenericId) scheme = ((GenericId) objectId).getScheme();
         type = partyRef != null ? partyRef.getType() : null;
-        objectIdType = partyRef != null ? PartyRefIdType.valueOf(new PersistedObjectId().objectIdClassSnakeCase(partyRef)) : PartyRefIdType.undefined;
+        objectIdType = partyRef != null
+                ? PartyRefIdType.valueOf(new PersistedObjectId().objectIdClassSnakeCase(partyRef))
+                : PartyRefIdType.undefined;
 
         return this;
     }

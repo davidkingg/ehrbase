@@ -72,13 +72,13 @@ public class TaggedStringBuilder implements I_TaggedStringBuilder {
     }
 
     @Override
-    public void replace(Integer start, Integer end, String replacement){
+    public void replace(Integer start, Integer end, String replacement) {
         stringBuffer.replace(start, end, replacement);
     }
 
     @Override
-    public void insert(Integer offset, String toInsert){
-        stringBuffer.insert(offset,toInsert);
+    public void insert(Integer offset, String toInsert) {
+        stringBuffer.insert(offset, toInsert);
     }
 
     @Override
@@ -103,6 +103,6 @@ public class TaggedStringBuilder implements I_TaggedStringBuilder {
 
     @Override
     public boolean startWith(String tag) {
-        return stringBuffer.indexOf(tag) == 1; //starts with a quote!
+        return stringBuffer.indexOf(tag) == 1; // starts with a quote!
     }
 }

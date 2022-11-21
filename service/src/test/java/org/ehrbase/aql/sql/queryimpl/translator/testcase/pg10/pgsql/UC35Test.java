@@ -19,24 +19,23 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC35;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class UC35Test extends UC35 {
 
-    public UC35Test(){
+    public UC35Test() {
         super();
         this.expectedSqlExpression =
-                "select cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" +
-                        "  cast(ehr_join.id as uuid), \n" +
-                        "  'local'\n" +
-                        ") as jsonb),'directory') as jsonb) as \"/directory\" from \"ehr\".\"ehr\" as \"ehr_join\"";
+                "select cast(jsonb_extract_path(cast(\"ehr\".\"js_ehr\"(\n" + "  cast(ehr_join.id as uuid), \n"
+                        + "  'local'\n"
+                        + ") as jsonb),'directory') as jsonb) as \"/directory\" from \"ehr\".\"ehr\" as \"ehr_join\"";
     }
 
     @Test
-    public void testIt(){
+    public void testIt() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

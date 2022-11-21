@@ -29,13 +29,13 @@ public class PersistentCodePhrase {
         this.rmCodePhrase = rmCodePhrase;
     }
 
-    public CodePhraseRecord encode(){
-        if (rmCodePhrase == null)
-            return null;
+    public CodePhraseRecord encode() {
+        if (rmCodePhrase == null) return null;
         return new CodePhraseRecord(rmCodePhrase.getTerminologyId().getValue(), rmCodePhrase.getCodeString());
     }
 
-    public CodePhrase decode(CodePhraseRecord codePhraseRecord){
-        return new CodePhrase(new TerminologyId(codePhraseRecord.getTerminologyIdValue()), codePhraseRecord.getCodeString());
+    public CodePhrase decode(CodePhraseRecord codePhraseRecord) {
+        return new CodePhrase(
+                new TerminologyId(codePhraseRecord.getTerminologyIdValue()), codePhraseRecord.getCodeString());
     }
 }

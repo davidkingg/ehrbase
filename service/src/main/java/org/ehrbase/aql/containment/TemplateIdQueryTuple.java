@@ -1,11 +1,9 @@
 package org.ehrbase.aql.containment;
 
-
-import org.ehrbase.webtemplate.parser.NodeId;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
+import org.ehrbase.webtemplate.parser.NodeId;
 
 public class TemplateIdQueryTuple implements Serializable {
 
@@ -31,8 +29,7 @@ public class TemplateIdQueryTuple implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TemplateIdQueryTuple that = (TemplateIdQueryTuple) o;
-        return templateId.equals(that.templateId) &&
-                jsonQueryExpression.equals(that.jsonQueryExpression);
+        return templateId.equals(that.templateId) && jsonQueryExpression.equals(that.jsonQueryExpression);
     }
 
     @Override

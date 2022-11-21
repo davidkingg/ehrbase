@@ -16,13 +16,6 @@
 
 package org.ehrbase.dao.access.query;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.Result;
-import org.jooq.exception.DataAccessException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +25,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
+import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.dao.access.interfaces.I_DomainAccess;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.exception.DataAccessException;
 
 /**
  * Attempt to use JAVA 8 CompletableFuture.
@@ -87,8 +86,7 @@ public class AsyncSqlQuery implements Supplier<Map<String, Object>> {
         Result<Record> records = fetchQueryResults();
         if (records != null && !records.isEmpty()) {
             return toJson(records);
-        } else
-            return new HashMap<>();
+        } else return new HashMap<>();
     }
 
     /**
@@ -105,7 +103,8 @@ public class AsyncSqlQuery implements Supplier<Map<String, Object>> {
         } catch (ExecutionException e) {
             throw new InternalServerException("fetching of async SQL query failed", e);
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // Restore interrupted state, according to https://rules.sonarsource.com/java/RSPEC-2142
+            Thread.currentThread().interrupt(); // Restore interrupted state, according to
+            // https://rules.sonarsource.com/java/RSPEC-2142
             throw new InternalServerException("ThreadDeath", e);
         }
     }

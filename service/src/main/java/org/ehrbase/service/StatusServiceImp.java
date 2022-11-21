@@ -17,6 +17,7 @@
  */
 package org.ehrbase.service;
 
+import java.lang.management.ManagementFactory;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.service.StatusService;
 import org.ehrbase.dao.access.interfaces.I_DatabaseStatusAccess;
@@ -25,8 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.lang.management.ManagementFactory;
 
 @Service
 @Transactional
@@ -37,10 +36,7 @@ public class StatusServiceImp extends BaseServiceImp implements StatusService {
 
     @Autowired
     public StatusServiceImp(
-            KnowledgeCacheService knowledgeCacheService,
-            DSLContext dslContext,
-            ServerConfig serverConfig
-    ) {
+            KnowledgeCacheService knowledgeCacheService, DSLContext dslContext, ServerConfig serverConfig) {
         super(knowledgeCacheService, dslContext, serverConfig);
     }
 
@@ -53,8 +49,7 @@ public class StatusServiceImp extends BaseServiceImp implements StatusService {
                 "%s %s %s",
                 ManagementFactory.getOperatingSystemMXBean().getName(),
                 ManagementFactory.getOperatingSystemMXBean().getArch(),
-                ManagementFactory.getOperatingSystemMXBean().getVersion()
-        );
+                ManagementFactory.getOperatingSystemMXBean().getVersion());
     }
 
     /**
@@ -65,8 +60,7 @@ public class StatusServiceImp extends BaseServiceImp implements StatusService {
         return String.format(
                 "%s %s",
                 ManagementFactory.getRuntimeMXBean().getVmVendor(),
-                ManagementFactory.getRuntimeMXBean().getSystemProperties().get("java.runtime.version")
-        );
+                ManagementFactory.getRuntimeMXBean().getSystemProperties().get("java.runtime.version"));
     }
 
     /**

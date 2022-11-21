@@ -18,28 +18,24 @@
 
 package org.ehrbase.aql.sql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.TestAqlBase;
 import org.ehrbase.aql.compiler.AqlExpression;
 import org.ehrbase.aql.compiler.Contains;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class PathResolverTest extends TestAqlBase {
 
     @Test
     public void testResolvePaths() {
-        String query =
-                "select\n" +
-                    "a, d\n" +
-                    "from EHR e\n" +
-                    "contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]" +
-                        "  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
+        String query = "select\n" + "a, d\n"
+                + "from EHR e\n"
+                + "contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]"
+                + "  CONTAINS ACTION d[openEHR-EHR-ACTION.immunisation_procedure.v1]";
 
         AqlExpression aqlExpression = new AqlExpression().parse(query);
         Contains contains = new Contains(aqlExpression.getParseTree(), knowledge).process();
-
-
 
         /** mocks the ehr.containment as
          *   comp_id    |   label                                                                               |   path
@@ -48,9 +44,9 @@ public class PathResolverTest extends TestAqlBase {
          */
         PathResolver cut = new PathResolver(knowledge, contains.getIdentifierMapper());
 
-
-        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","d").toArray()[0]).isEqualTo("/content[openEHR-EHR-ACTION.immunisation_procedure.v1]");
-        assertThat(cut.pathOf("IDCR - Immunisation summary.v0","a").toArray()[0]).isEqualTo("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
-
+        assertThat(cut.pathOf("IDCR - Immunisation summary.v0", "d").toArray()[0])
+                .isEqualTo("/content[openEHR-EHR-ACTION.immunisation_procedure.v1]");
+        assertThat(cut.pathOf("IDCR - Immunisation summary.v0", "a").toArray()[0])
+                .isEqualTo("/composition[openEHR-EHR-COMPOSITION.health_summary.v1]");
     }
 }

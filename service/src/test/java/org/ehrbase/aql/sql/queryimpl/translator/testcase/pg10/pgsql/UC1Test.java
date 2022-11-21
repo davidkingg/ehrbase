@@ -19,23 +19,22 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC1;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class UC1Test extends UC1 {
 
-    public UC1Test(){
+    public UC1Test() {
         super();
-        this.expectedSqlExpression = "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" " +
-                "from (" +
-                "       select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"ehr\" as \"ehr_join\"" +
-                ") as \"\"";
+        this.expectedSqlExpression = "select distinct on (\"/ehr_id/value\") \"\".\"/ehr_id/value\" " + "from ("
+                + "       select \"ehr_join\".\"id\" as \"/ehr_id/value\" from \"ehr\".\"ehr\" as \"ehr_join\""
+                + ") as \"\"";
     }
 
     @Test
-    public void doTest(){
+    public void doTest() {
         assertThat(testAqlSelectQuery()).isTrue();
     }
 }

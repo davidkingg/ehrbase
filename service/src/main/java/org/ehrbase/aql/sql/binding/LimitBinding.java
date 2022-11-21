@@ -23,7 +23,7 @@ import org.jooq.SelectQuery;
 /**
  * Created by christian on 4/27/2018.
  */
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452"})
 public class LimitBinding {
 
     private SelectQuery selectQuery;
@@ -39,8 +39,8 @@ public class LimitBinding {
     public SelectQuery bind() {
 
         if (limitAttribute != null || offsetAttribute != null) {
-            selectQuery.addLimit(offsetAttribute == null ? 0 : offsetAttribute,
-                    limitAttribute == null ? 0 : limitAttribute);
+            selectQuery.addLimit(
+                    offsetAttribute == null ? 0 : offsetAttribute, limitAttribute == null ? 0 : limitAttribute);
         }
         return selectQuery;
     }

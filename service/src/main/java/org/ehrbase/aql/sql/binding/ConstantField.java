@@ -23,7 +23,7 @@ import org.ehrbase.aql.sql.queryimpl.DefaultColumnId;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-@SuppressWarnings({"java:S3776","java:S3740","java:S1452"})
+@SuppressWarnings({"java:S3776", "java:S3740", "java:S1452"})
 public class ConstantField {
 
     private final I_VariableDefinition variableDefinition;
@@ -35,14 +35,12 @@ public class ConstantField {
     Field<?> toSql() {
         Field<?> field;
 
-        ConstantDefinition constantDefinition = (ConstantDefinition)variableDefinition;
-        if (constantDefinition.getValue() == null) //assume NULL
-            field = DSL.field("NULL");
-        else
-            field = DSL.field(DSL.val(constantDefinition.getValue()));
+        ConstantDefinition constantDefinition = (ConstantDefinition) variableDefinition;
+        if (constantDefinition.getValue() == null) // assume NULL
+        field = DSL.field("NULL");
+        else field = DSL.field(DSL.val(constantDefinition.getValue()));
 
-        if (constantDefinition.getAlias() != null)
-            field = field.as(constantDefinition.getAlias());
+        if (constantDefinition.getAlias() != null) field = field.as(constantDefinition.getAlias());
         else {
             String defaultAlias = DefaultColumnId.value(constantDefinition);
             field = field.as("/" + defaultAlias);

@@ -19,19 +19,19 @@
 
 package org.ehrbase.aql.sql.queryimpl.translator.testcase.pg10.pgsql;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.ehrbase.aql.sql.queryimpl.translator.testcase.UC38;
 import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class UC38Test extends UC38 {
 
     public UC38Test() {
         super();
         this.expectedSqlExpression =
-                "select min(\"min_magnitude\") as \"min_magnitude\" from (select (ARRAY.COLUMN#>>'{/description[at0001],/items[at0004],0,/value,magnitude}')::bigint as \"min_magnitude\" from \"ehr\".\"entry\" join lateral (\n" +
-                        "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)) \n" +
-                        " AS COLUMN) as \"ARRAY\" on true where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
+                "select min(\"min_magnitude\") as \"min_magnitude\" from (select (ARRAY.COLUMN#>>'{/description[at0001],/items[at0004],0,/value,magnitude}')::bigint as \"min_magnitude\" from \"ehr\".\"entry\" join lateral (\n"
+                        + "  select (ehr.xjsonb_array_elements((\"ehr\".\"entry\".\"entry\"#>>'{/composition[openEHR-EHR-COMPOSITION.health_summary.v1],/content[openEHR-EHR-ACTION.immunisation_procedure.v1]}')::jsonb)) \n"
+                        + " AS COLUMN) as \"ARRAY\" on true where \"ehr\".\"entry\".\"template_id\" = ?) as \"\"";
     }
 
     @Test
