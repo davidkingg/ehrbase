@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH) and Jake Smolka (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.rest.ehrscape.controller;
 
 import com.nedap.archie.rm.composition.Composition;
@@ -44,17 +43,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/rest/ecis/v1/template", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(
+        path = "/rest/ecis/v1/template",
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class TemplateController extends BaseController {
 
     private final TemplateService templateService;
-  private final CompositionService compositionService;
+    private final CompositionService compositionService;
 
-  @Autowired
-  public TemplateController(
-      TemplateService templateService, CompositionService compositionService) {
+    @Autowired
+    public TemplateController(TemplateService templateService, CompositionService compositionService) {
         this.templateService = Objects.requireNonNull(templateService);
-    this.compositionService = Objects.requireNonNull(compositionService);
+        this.compositionService = Objects.requireNonNull(compositionService);
     }
 
     @GetMapping()
@@ -74,21 +74,20 @@ public class TemplateController extends BaseController {
         return ResponseEntity.ok(responseData);
     }
 
-  @GetMapping(path = "/{templateId}/example")
-  public ResponseEntity<StructuredString> getTemplateExample(
-      @PathVariable(value = "templateId") String templateId,
-      @RequestParam(value = "format", defaultValue = "FLAT") CompositionFormat format) {
+    @GetMapping(path = "/{templateId}/example")
+    public ResponseEntity<StructuredString> getTemplateExample(
+            @PathVariable(value = "templateId") String templateId,
+            @RequestParam(value = "format", defaultValue = "FLAT") CompositionFormat format) {
 
-    if ((format == CompositionFormat.RAW
-        || format == CompositionFormat.EXPANDED
-        || format == CompositionFormat.ECISFLAT)) {
-      throw new InvalidApiParameterException(String.format("Format %s not supported", format));
-    }
+        if ((format == CompositionFormat.RAW
+                || format == CompositionFormat.EXPANDED
+                || format == CompositionFormat.ECISFLAT)) {
+            throw new InvalidApiParameterException(String.format("Format %s not supported", format));
+        }
 
-    Composition composition = templateService.buildExample(templateId);
-    return ResponseEntity.ok(
-        compositionService.serialize(
-            new CompositionDto(composition, templateId, null, null), format));
+        Composition composition = templateService.buildExample(templateId);
+        return ResponseEntity.ok(
+                compositionService.serialize(new CompositionDto(composition, templateId, null, null), format));
     }
 
     @GetMapping(path = "/{templateId}")

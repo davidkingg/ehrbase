@@ -129,6 +129,7 @@
 
     <properties>
         <java.version>11</java.version>
+        <license-header.dir>./</license-header.dir>
         <!-- PostgreSQL Database Properties -->
         <database.host>localhost</database.host>
         <database.port>5432</database.port>
@@ -299,9 +300,16 @@
                 <version>2.22.5</version>
                 <configuration>
                     <java>
+                        <toggleOffOn>
+                            <off>@format:off</off>
+                            <on>@format:on</on>
+                        </toggleOffOn>
                         <palantirJavaFormat>
                             <version>2.24.0</version>
                         </palantirJavaFormat>
+                        <licenseHeader>
+                            <file>${license-header.dir}/license-header</file>
+                        </licenseHeader>
                     </java>
                 </configuration>
             </plugin>

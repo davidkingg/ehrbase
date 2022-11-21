@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Stefan Spiska (Vitasystems GmbH), Jake Smolka (Hannover Medical School), and Luis Marco-Ruiz (Hannover Medical School).
+ * Copyright (c) 2019 vitasystems GmbH and Hannover Medical School.
  *
  * This file is part of project EHRbase
  *
@@ -7,7 +7,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,22 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.response.ehrscape.CompositionDto;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.StructuredString;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
 
 public interface CompositionService extends BaseService, VersionedObjectService<Composition, UUID> {
     /**
@@ -136,8 +134,4 @@ public interface CompositionService extends BaseService, VersionedObjectService<
     Optional<OriginalVersion<Composition>> getOriginalVersionComposition(UUID versionedObjectUid, int version);
 
     Composition buildComposition(String content, CompositionFormat format, String templateId);
-
-
-
-
 }
