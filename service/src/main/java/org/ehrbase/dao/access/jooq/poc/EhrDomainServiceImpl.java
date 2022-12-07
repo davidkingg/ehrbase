@@ -54,12 +54,14 @@ public class EhrDomainServiceImpl implements EhrDomainService {
     private final I_DomainAccess domainAccess;
     private final StatusDomainService statusService;
     private final ContributionDomainService contributionService;
+    private final Persister<EhrRecord, Ehr> persister;
     
     
     public EhrDomainServiceImpl(I_DomainAccess domainAccess, StatusDomainService statusService, ContributionDomainService contributionService) {
       this.domainAccess = domainAccess;
       this.statusService = statusService;
       this.contributionService = contributionService;
+      this.persister = Persister.persister(domainAccess);
     }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -103,8 +105,6 @@ public class EhrDomainServiceImpl implements EhrDomainService {
         return retrieveBySubjectUUID(identifierRecord.getParty(), subjectId).getOrThrow();
     }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------    
-    
     public UUID findBySubjectExternalRef(String subjectId, String issuerSpace) {
         try {
             DSLContext context = domainAccess.getContext();
@@ -250,7 +250,8 @@ public class EhrDomainServiceImpl implements EhrDomainService {
     public UUID create(Ehr ehr, Timestamp transactionTime) {
       ehr.setDateCreated(transactionTime);
       ehr.setDateCreatedTzid(transactionTime);
-      ehr.persist();
+      
+      persister.persist(ehr);
 
       UUID contributionId =  contributionService.commit(ehr.getContributionAccess(), transactionTime);
 
@@ -314,10 +315,10 @@ public class EhrDomainServiceImpl implements EhrDomainService {
         ehr.setStatusChanged(false);
       }
 
-      if(force || ehr.isDirty()) {
+      if(force || persister.isDirty(ehr)) {
         ehr.setDateCreated(transactionTime);
         ehr.setDateCreatedTzid(transactionTime);
-        result |= ehr.update();
+        result |= persister.update(ehr);
       }
 
       return result;

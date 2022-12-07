@@ -14,6 +14,7 @@ import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.dao.access.util.TransactionTime;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.enums.ContributionState;
+import org.ehrbase.jooq.pg.tables.records.ContributionRecord;
 import org.ehrbase.util.UuidGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +26,12 @@ public class ContributionDomainService {
 
   private final I_DomainAccess domainAccess;
   private final AuditDetailDomainService auditDetailsService;
+  private final Persister<ContributionRecord, Contribution> persister;
 
   public ContributionDomainService(I_DomainAccess domainAccess, AuditDetailDomainService auditDetailsService) {
     this.domainAccess = domainAccess;
     this.auditDetailsService = auditDetailsService;
+    this.persister = Persister.persister(domainAccess);
   }
 
   public Contribution retrieveInstance(UUID contributionId) {
@@ -53,7 +56,7 @@ public class ContributionDomainService {
     // :TODO maybe set the ehtId
 //    contribution.setEhrId(this.getEhrId());
 
-    if (contribution.persistAllways() == 0)
+    if(persister.persistAllways(contribution) == 0)
       throw new InternalServerException("Couldn't store contribution");
 
     return contribution.getId();
@@ -98,11 +101,10 @@ public class ContributionDomainService {
   public UUID commitWithSignature(Contribution contribution, String signature) {
     contribution.setSignature(signature);
     contribution.setState(ContributionDef.ContributionState.COMPLETE);
-    contribution.persist();
+    persister.persist(contribution);
     return contribution.getId();
   }
 
-  // #################################################################################################################
   public Boolean update(Contribution contribution, Timestamp transactionTime, UUID committerId, UUID systemId,
       String contributionType, String contributionState, String contributionChangeType, String description) {
     return update(contribution, transactionTime, committerId, systemId,
@@ -131,8 +133,7 @@ public class ContributionDomainService {
   public UUID updateWithSignature(Contribution contribution, String signature) {
     contribution.setSignature(signature);
     contribution.setState(ContributionDef.ContributionState.COMPLETE);
-    contribution.update();
-
+    persister.update(contribution);
     return contribution.getId();
   }
 
@@ -155,7 +156,7 @@ public class ContributionDomainService {
       contribution.setAuditDetails(auditDetails);
 
       contribution.setId(UuidGenerator.randomUUID()); // force to create new entry from old values
-      return contribution.persistAllways() == 1;
+      return persister.persistAllways(contribution) == 1;
     }
 
     return false;
@@ -170,6 +171,6 @@ public class ContributionDomainService {
   }
   
   public Integer delete(Contribution contribution) {
-    return contribution.delete();
+    return persister.delete(contribution);
   }
 }

@@ -24,7 +24,7 @@ import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Contribution implements ActiveObject {
+public class Contribution implements ActiveObjectAware<ContributionRecord> {
 
   Logger log = LoggerFactory.getLogger(Contribution.class);
 
@@ -207,38 +207,6 @@ public class Contribution implements ActiveObject {
     return contributionRecord.getNamespace();
   }
 
-  @Override
-  public Integer persist() {
-    domainAccess.getContext().attach(contributionRecord);
-    if (contributionRecord.getId() == null)
-      contributionRecord.setId(UUID.randomUUID());
-    return contributionRecord.store();
-  }
-
-  @Override
-  public Integer persistAllways() {
-    domainAccess.getContext().attach(contributionRecord);
-    if (contributionRecord.getId() == null)
-      contributionRecord.setId(UUID.randomUUID());
-    return contributionRecord.insert();
-  }
-
-  @Override
-  public Boolean update() {
-    domainAccess.getContext().attach(contributionRecord);
-    return contributionRecord.update() == 1;
-  }
-
-  @Override
-  public boolean isDirty() {
-    return contributionRecord.changed();
-  }
-  
-  public Integer delete() {
-    domainAccess.getContext().attach(contributionRecord);
-    return contributionRecord.delete();
-  }
-  
   //------------------------------------------------------------------------------------------------------------------------
   //:TODO currently not impl. should be handeld by a specific REST/Service call with high priviledges
   public void adminDelete() {
@@ -274,5 +242,10 @@ public class Contribution implements ActiveObject {
 
     // delete contribution itself
     adminApi.deleteContribution(this.getId(), null, false);
+  }
+
+  @Override
+  public ContributionRecord getActiveObject() {
+    return contributionRecord;
   }
 }

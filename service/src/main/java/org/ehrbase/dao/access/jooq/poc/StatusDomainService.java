@@ -31,13 +31,16 @@ public class StatusDomainService {
 
   private final I_DomainAccess domainAccess;
   private final ContributionDomainService contributionService;
-  private AuditDetailDomainService auditDetailsService;
+  private final AuditDetailDomainService auditDetailsService;
+  private final Persister<StatusRecord,Status> persister;
+  
 
   public StatusDomainService(I_DomainAccess domainAccess, ContributionDomainService contributionService,
       AuditDetailDomainService auditDetailsService) {
     this.domainAccess = domainAccess;
     this.contributionService = contributionService;
     this.auditDetailsService = auditDetailsService;
+    this.persister = Persister.persister(domainAccess);
   }
 
   public Status retrieveInstance(UUID statusId) {
@@ -83,29 +86,21 @@ public class StatusDomainService {
   public Status retrieveInstanceByEhrId(UUID ehrId) {
     StatusRecord record = null;
 
-    if (domainAccess.getContext().fetchExists(STATUS, STATUS.EHR_ID.eq(ehrId))) {
+    if (domainAccess.getContext().fetchExists(STATUS, STATUS.EHR_ID.eq(ehrId)))
       record = domainAccess.getContext().fetchOne(STATUS, STATUS.EHR_ID.eq(ehrId));
-    } else {
+    else {
       if (!domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.EHR_ID.eq(ehrId)))
-      // no current one (premise from above) and no history --> inconsistency
-      {
         throw new InternalServerException("DB inconsistency. No STATUS for given EHR ID: " + ehrId);
-      } else {
-        Result<StatusHistoryRecord> recordsRes = domainAccess.getContext().selectFrom(STATUS_HISTORY)
-            .where(STATUS_HISTORY.EHR_ID.eq(ehrId)).orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc()) // latest at top,
-                                                                                                   // i.e. [0]
-            .fetch();
-        // get latest
-        if (recordsRes.get(0) != null) {
+      else {
+        Result<StatusHistoryRecord> recordsRes = domainAccess.getContext()
+            .selectFrom(STATUS_HISTORY).where(STATUS_HISTORY.EHR_ID.eq(ehrId)).orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc()).fetch();
+        if (recordsRes.get(0) != null)
           record = Mapper.from(recordsRes.get(0));
-        }
       }
     }
 
-    if (record == null) {
+    if (record == null)
       return null;
-    }
-
     return createStatusAccessForRetrieval(record, null, record.getNamespace());
   }
 
@@ -169,7 +164,6 @@ public class StatusDomainService {
     return versionMap;
   }
   
-  //----------------------------------------------------------------------------------------------------------------------------------------
   public UUID commit(Status status, LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
     createAndSetContribution(status, committerId, systemId, description, ContributionChangeType.CREATION);
     return internalCommit(status, timestamp);
@@ -196,7 +190,7 @@ public class StatusDomainService {
     status.setHasAudit(auditDetailsAccess.getId());
     status.setSysTransaction(Timestamp.valueOf(transactionTime));
 
-    if(status.persist() == 0)
+    if(persister.persist(status) == 0)
       throw new InvalidApiParameterException("Input EHR couldn't be stored; Storing EHR_STATUS failed");
 
     return status.getId();
@@ -216,7 +210,7 @@ public class StatusDomainService {
       }
     }
     
-    contributionAccess.persist();
+    contributionService.commit(contributionAccess);
     status.setContributionId(contributionAccess.getId());
   }
   
@@ -234,12 +228,12 @@ public class StatusDomainService {
 
   private Boolean internalUpdate(Status status, LocalDateTime transactionTime) {
     AuditDetail auditDetailsAccess = status.getAuditDetailsAccess();
-    auditDetailsAccess.persist();
+    auditDetailsService.commit(auditDetailsAccess);
     status.setHasAudit(auditDetailsAccess.getId());
     status.setSysTransaction(Timestamp.valueOf(transactionTime));
 
     try {
-      return status.update();
+      return persister.update(status);
     } catch (RuntimeException e) {
       throw new InvalidApiParameterException("Couldn't marshall given EHR_STATUS / OTHER_DETAILS, content probably breaks RM rules");
     }
@@ -271,7 +265,7 @@ public class StatusDomainService {
   private Integer internalDelete(Status status, LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
     String tenantIdentifier = status.getNamespace();
     status.setSysTransaction(Timestamp.valueOf(timestamp));
-    status.delete();
+    persister.delete(status);
 
     var delAudit = new AuditDetail(
         domainAccess,
@@ -280,7 +274,7 @@ public class StatusDomainService {
         I_ConceptAccess.ContributionChangeType.DELETED, description,
         tenantIdentifier);
     
-    delAudit.persist();
+    auditDetailsService.commit(delAudit);
     
     return createAndCommitNewDeletedVersionAsHistory(
         status,
@@ -297,7 +291,7 @@ public class StatusDomainService {
       
     Status historyStatusAccess = new Status(domainAccess, contrib, newRecord);
 
-    if (historyStatusAccess.persist() != 1)
+    if(persister.persist(historyStatusAccess) != 1)
       throw new InternalServerException("DB inconsistency");
     else
       return 1;

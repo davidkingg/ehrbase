@@ -12,7 +12,6 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
-import org.ehrbase.dao.access.support.DataAccess;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.AuditDetailsRecord;
 
@@ -23,7 +22,7 @@ import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 
-public class AuditDetail implements ActiveObject {
+public class AuditDetail implements ActiveObjectAware<AuditDetailsRecord> {
 
   private I_DomainAccess dataAccess;
   private AuditDetailsRecord auditDetailsRecord;
@@ -139,35 +138,40 @@ public class AuditDetail implements ActiveObject {
   }
 
   @Override
-  public Integer persist() {
-    dataAccess.getContext().attach(auditDetailsRecord);
-    if(auditDetailsRecord.getId() == null)
-      auditDetailsRecord.setId(UUID.randomUUID());
-    return auditDetailsRecord.store();
-  }
-  
-  @Override
-  public Integer persistAllways() {
-    dataAccess.getContext().attach(auditDetailsRecord);
-    if(auditDetailsRecord.getId() == null)
-      auditDetailsRecord.setId(UUID.randomUUID());
-    return auditDetailsRecord.insert();
-  }  
-
-  @Override
-  public Boolean update() {
-    dataAccess.getContext().attach(auditDetailsRecord);
-    return auditDetailsRecord.update() == 1;
+  public AuditDetailsRecord getActiveObject() {
+    return auditDetailsRecord;
   }
 
-  @Override
-  public Integer delete() {
-    dataAccess.getContext().attach(auditDetailsRecord);
-    return auditDetailsRecord.delete();
-  }
-
-  @Override
-  public boolean isDirty() {
-    return auditDetailsRecord.changed();
-  }
+//  @Override
+//  public Integer persist() {
+//    dataAccess.getContext().attach(auditDetailsRecord);
+//    if(auditDetailsRecord.getId() == null)
+//      auditDetailsRecord.setId(UUID.randomUUID());
+//    return auditDetailsRecord.store();
+//  }
+//  
+//  @Override
+//  public Integer persistAllways() {
+//    dataAccess.getContext().attach(auditDetailsRecord);
+//    if(auditDetailsRecord.getId() == null)
+//      auditDetailsRecord.setId(UUID.randomUUID());
+//    return auditDetailsRecord.insert();
+//  }  
+//
+//  @Override
+//  public Boolean update() {
+//    dataAccess.getContext().attach(auditDetailsRecord);
+//    return auditDetailsRecord.update() == 1;
+//  }
+//
+//  @Override
+//  public Integer delete() {
+//    dataAccess.getContext().attach(auditDetailsRecord);
+//    return auditDetailsRecord.delete();
+//  }
+//
+//  @Override
+//  public boolean isDirty() {
+//    return auditDetailsRecord.changed();
+//  }
 }

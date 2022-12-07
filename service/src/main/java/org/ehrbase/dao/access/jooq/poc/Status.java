@@ -26,7 +26,7 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 
-public class Status implements ActiveObject {
+public class Status implements ActiveObjectAware<StatusRecord> {
 
   private Contribution contributionAccess;
   private AuditDetail auditDetailsAccess; // audit associated with this status
@@ -237,27 +237,12 @@ public class Status implements ActiveObject {
   }
 
   @Override
-  public Integer persist() {
-    domainAccess.getContext().attach(statusRecord);
-    if(statusRecord.getId() == null)
-      statusRecord.setId(UUID.randomUUID());
-    return statusRecord.store();
+  public StatusRecord getActiveObject() {
+    return statusRecord;
   }
 
   @Override
-  public Boolean update() {
-    domainAccess.getContext().attach(statusRecord);
-    return statusRecord.update() == 1;
-  }
-
-  @Override
-  public Integer delete() {
-    domainAccess.getContext().attach(statusRecord);
-    return statusRecord.delete();
-  }
-
-  @Override
-  public boolean isDirty() {
-    return statusRecord.changed();
+  public void setId(UUID id) {
+    statusRecord.setId(id);
   }
 }

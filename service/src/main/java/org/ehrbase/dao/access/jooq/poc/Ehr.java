@@ -31,7 +31,7 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 
-public class Ehr implements ActiveObject {
+public class Ehr implements ActiveObjectAware<EhrRecord> {
   public static final String JSONB = "::jsonb";
   public static final String EXCEPTION = " exception:";
   public static final String COULD_NOT_RETRIEVE_EHR_FOR_ID = "Could not retrieve EHR for id:";
@@ -271,30 +271,6 @@ public class Ehr implements ActiveObject {
     return status;
   }
 
-  @Override
-  public Integer persist() {
-    domainAccess.getContext().attach(ehrRecord);
-    if(ehrRecord.getId() == null)
-      ehrRecord.setId(UUID.randomUUID());
-    return ehrRecord.store();
-  }
-
-  @Override
-  public Boolean update() {
-    domainAccess.getContext().attach(ehrRecord);
-    return ehrRecord.update() == 1;
-  }
-
-  @Override
-  public Integer delete() {
-    throw new InternalServerException("INTERNAL: this delete is not legal");
-  }
-
-  @Override
-  public boolean isDirty() {
-    return ehrRecord.changed();
-  }
-  
   //------------------------------------------------------------------------------------------------------------------------
   //:TODO currently not impl. should be handeld by a specific REST/Service call with high priviledges  
   public void adminDeleteEhr() {
@@ -302,5 +278,15 @@ public class Ehr implements ActiveObject {
     if (result.isEmpty() || !Boolean.TRUE.equals(result.get(0).getDeleted())) {
       throw new InternalServerException("Admin deletion of EHR failed!");
     }
+  }
+
+  @Override
+  public EhrRecord getActiveObject() {
+    return ehrRecord;
+  }
+
+  @Override
+  public void setId(UUID id) {
+    ehrRecord.setId(id);
   }
 }

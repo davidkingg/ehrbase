@@ -18,9 +18,11 @@ import org.springframework.stereotype.Service;
 public class AuditDetailDomainService {
 
   private final I_DomainAccess dataAccess;
+  private final Persister<AuditDetailsRecord,AuditDetail> persister;
   
   public AuditDetailDomainService(I_DomainAccess dataAccess) {
     this.dataAccess = dataAccess;
+    this.persister = Persister.persister(null);
   }
 
   public AuditDetail retrieveInstance(UUID auditId) {
@@ -46,7 +48,7 @@ public class AuditDetailDomainService {
     audit.setTimeCommitted(transactionTime);
     audit.setTimeCommittedTzid();
 
-    int result = audit.persistAllways();
+    int result = persister.persistAllways(audit);
     if (result == 1)
       return audit.getId();
     else
@@ -61,7 +63,7 @@ public class AuditDetailDomainService {
     audit.setCommitter(committerId);
     Optional.ofNullable(description).ifPresent(d -> audit.setDescription(description));
     audit.setChangeType(I_ConceptAccess.ContributionChangeType.CREATION);
-    audit.persist();
+    persister.persist(audit);
     return audit.getId();
   }
 
@@ -70,7 +72,7 @@ public class AuditDetailDomainService {
 
     if(force || audit.isChanged()) {
       audit.setId(UUID.randomUUID());
-      result = audit.persistAllways() == 1;
+      result = persister.persistAllways(audit) == 1;
     }
 
     return result;
@@ -99,10 +101,10 @@ public class AuditDetailDomainService {
     
     Optional.ofNullable(committer).ifPresent(o -> audit.setCommitter(o));
     Optional.ofNullable(description).ifPresent(o -> audit.setDescription(description));
-    return audit.update();
+    return persister.update(audit);
   }
 
   public Integer delete(AuditDetail audit) {
-    return audit.delete();
+    return persister.delete(audit);
   }
 }
