@@ -20,20 +20,6 @@ package org.ehrbase.service;
 import static org.ehrbase.jooq.pg.Routines.partyUsage;
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.Attestation;
-import com.nedap.archie.rm.generic.AuditDetails;
-import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.generic.RevisionHistoryItem;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -45,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
@@ -57,11 +44,12 @@ import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
-import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
+import org.ehrbase.dao.access.jooq.poc.Ehr;
+import org.ehrbase.dao.access.jooq.poc.EhrDomainService;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
@@ -79,13 +67,30 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
+import com.nedap.archie.rm.generic.Attestation;
+import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.RevisionHistoryItem;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
 @Service(value = "ehrService")
 @Transactional()
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
+    private static Logger logger = LoggerFactory.getLogger(EhrServiceImp.class);
     public static final String DESCRIPTION = "description";
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    
     private final ValidationService validationService;
     private final TenantService tenantService;
+    private final EhrDomainService ehrDomService;
 
     @Autowired
     public EhrServiceImp(
@@ -93,10 +98,12 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
             ValidationService validationService,
             DSLContext context,
             ServerConfig serverConfig,
-            TenantService tenantService) {
+            TenantService tenantService,
+            EhrDomainService ehrDomService) {
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
         this.tenantService = tenantService;
+        this.ehrDomService = ehrDomService;
     }
 
     private UUID getEmptyPartyByTenant() {
@@ -125,7 +132,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
             subjectUuid = new PersistedPartyProxy(getDataAccess())
                     .getOrCreate(status.getSubject(), tenantService.getCurrentTenantIdentifier());
 
-            if (I_EhrAccess.checkExist(getDataAccess(), subjectUuid)) {
+            if (ehrDomService.isSubjectAssignedToEhr(subjectUuid)) {
                 throw new StateConflictException(
                         "Specified party has already an EHR set (partyId=" + subjectUuid + ")");
             }
@@ -134,17 +141,12 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         UUID systemId = getSystemUuid();
         UUID committerId = getCurrentUserId(tenantService.getCurrentTenantIdentifier());
 
-        try { // this try block sums up a bunch of operations that can throw errors in the following
-            I_EhrAccess ehrAccess = I_EhrAccess.getInstance(
-                    getDataAccess(),
-                    subjectUuid,
-                    systemId,
-                    null,
-                    null,
-                    ehrId,
-                    tenantService.getCurrentTenantIdentifier());
+        // this try block sums up a bunch of operations that can throw errors in the following
+        try {
+            Ehr ehrAccess =
+                new Ehr(getDataAccess(), subjectUuid, systemId, null, null, ehrId, tenantService.getCurrentTenantIdentifier());
             ehrAccess.setStatus(status);
-            return ehrAccess.commit(committerId, systemId, DESCRIPTION);
+            return ehrDomService.create(ehrAccess, committerId, systemId, DESCRIPTION);
         } catch (Exception e) {
             throw new InternalServerException("Could not create an EHR with given parameters.", e);
         }
@@ -189,11 +191,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         }
 
         try {
-
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUuid);
-
+            Ehr ehrAccess = ehrDomService.find(ehrUuid);
             return ehrAccess.getStatus();
-
         } catch (Exception e) {
             logger.error(e.getMessage());
             throw new InternalServerException(e);
@@ -261,35 +260,26 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
     @Override
     public UUID updateStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
-
         check(status);
-
         // pre-step: check for valid ehrId
-        if (!hasEhr(ehrId)) {
+        if (!hasEhr(ehrId))
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
-        }
 
-        I_EhrAccess ehrAccess;
+        Ehr ehrAccess;
         try {
-            ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+            ehrAccess = ehrDomService.find(ehrId);
+            ehrAccess.setStatus(status);
         } catch (Exception e) {
             throw new InternalServerException(e);
         }
 
-        ehrAccess.setStatus(status);
-
         // execute actual update and check for success
-        if (ehrAccess
-                .update(
-                        getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
-                        getSystemUuid(),
-                        contributionId,
-                        null,
-                        I_ConceptAccess.ContributionChangeType.MODIFICATION,
-                        DESCRIPTION)
-                .equals(false))
-            throw new InternalServerException(
-                    "Problem updating EHR_STATUS"); // unexpected problem. expected ones are thrown inside of update()
+        Boolean ehrUpdate = ehrDomService.update(
+            ehrAccess, getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
+            getSystemUuid(), contributionId, null, I_ConceptAccess.ContributionChangeType.MODIFICATION, DESCRIPTION);
+        
+        if(ehrUpdate == false)
+            throw new InternalServerException("Problem updating EHR_STATUS"); // unexpected problem. expected ones are thrown inside of update()
 
         return UUID.fromString(getEhrStatus(ehrId).getUid().getRoot().getValue());
     }
@@ -309,7 +299,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
         UUID subjectUuid = new PersistedPartyRef(getDataAccess()).findInDB(subjectId, nameSpace);
-        return Optional.ofNullable(I_EhrAccess.retrieveInstanceBySubject(getDataAccess(), subjectUuid));
+        return Optional.ofNullable(ehrDomService.findBySubject(subjectUuid));
     }
 
     /**
@@ -317,8 +307,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
      */
     @Override
     public boolean doesEhrExist(UUID ehrId) {
-        Optional<I_EhrAccess> ehrAccess = Optional.ofNullable(I_EhrAccess.retrieveInstance(getDataAccess(), ehrId));
-        return ehrAccess.isPresent();
+        return Optional.ofNullable(ehrDomService.find(ehrId)).isPresent();
     }
 
     /**
@@ -329,12 +318,11 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
      */
     public DvDateTime getCreationTime(UUID ehrId) {
         // pre-step: check for valid ehrId
-        if (!hasEhr(ehrId)) {
+        if (!hasEhr(ehrId))
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrId.toString());
-        }
 
         try {
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+            Ehr ehrAccess = ehrDomService.find(ehrId);
             OffsetDateTime offsetDateTime = OffsetDateTime.from(
                     LocalDateTime.from(ehrAccess.getEhrRecord().getDateCreated().toLocalDateTime())
                             .atZone(ZoneId.of(ehrAccess.getEhrRecord().getDateCreatedTzid())));
@@ -347,7 +335,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
     @Override
     public Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp) {
-        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+        Ehr ehrAccess = ehrDomService.find(ehrUid);
         return ehrAccess.getStatusAccess().getEhrStatusVersionFromTimeStamp(timestamp);
     }
 
@@ -358,7 +346,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
      */
     public String getLatestVersionUidOfStatus(UUID ehrStatusId) {
         try {
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrStatusId);
+            Ehr ehrAccess = ehrDomService.find(ehrStatusId);
             UUID statusId = ehrAccess.getStatusId();
             Integer version = I_StatusAccess.getLatestVersionNumber(getDataAccess(), statusId);
 
@@ -369,13 +357,13 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     }
 
     public UUID getEhrStatusVersionedObjectUidByEhr(UUID ehrUid) {
-        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+        Ehr ehrAccess = ehrDomService.find(ehrUid);
         return ehrAccess.getStatusId();
     }
 
     @Override
     public boolean hasEhr(UUID ehrId) {
-        return I_EhrAccess.hasEhr(getDataAccess(), ehrId);
+        return ehrDomService.exists(ehrId);
     }
 
     @Override
@@ -383,7 +371,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     For contributions it may be called n times where n is the number of versions in the contribution which will in turn mean
     n SQL queries are performed*/
     public boolean isModifiable(UUID ehrId) {
-        return I_EhrAccess.isModifiable(getDataAccess(), ehrId);
+        return ehrDomService.isModifiable(ehrId);
     }
 
     @Override
@@ -404,7 +392,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
         versionedEhrStatus.setUid(new HierObjectId(ehrStatus.getUid().getRoot().getValue()));
         versionedEhrStatus.setOwnerId(new ObjectRef<>(new HierObjectId(ehrUid.toString()), "local", "EHR"));
-        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+        Ehr ehrAccess = ehrDomService.find(ehrUid);
         versionedEhrStatus.setTimeCreated(new DvDateTime(OffsetDateTime.of(
                 ehrAccess.getStatusAccess().getInitialTimeOfVersionedEhrStatus().toLocalDateTime(),
                 OffsetDateTime.now().getOffset())));
@@ -414,7 +402,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
     @Override
     public RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrUid) {
-        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrUid);
+        Ehr ehrAccess = ehrDomService.find(ehrUid);
 
         // get number of versions
         int versions = I_StatusAccess.getLatestVersionNumber(getDataAccess(), ehrAccess.getStatusId());
@@ -464,7 +452,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public UUID getDirectoryId(UUID ehrId) {
         try {
-            I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+            Ehr ehrAccess = ehrDomService.find(ehrId);
             return ehrAccess.getDirectoryId();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -478,7 +466,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public boolean removeDirectory(UUID ehrId) {
         try {
-            return I_EhrAccess.removeDirectory(getDataAccess(), ehrId);
+            return ehrDomService.removeDirectory(ehrId);
         } catch (Exception e) {
             logger.error(String.format(
                     "Could not remove directory from EHR with id %s.\nReason: %s", ehrId.toString(), e.getMessage()));
@@ -489,7 +477,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void adminDeleteEhr(UUID ehrId) {
-        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+        Ehr ehrAccess = ehrDomService.find(ehrId);
         ehrAccess.adminDeleteEhr();
     }
 

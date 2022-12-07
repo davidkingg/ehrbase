@@ -21,16 +21,13 @@ import static org.ehrbase.dao.access.util.FolderUtils.checkSiblingNameConflicts;
 import static org.ehrbase.dao.access.util.FolderUtils.doesAnyIdInFolderStructureMatch;
 import static org.ehrbase.dao.access.util.FolderUtils.uuidMatchesObjectVersionId;
 
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -42,10 +39,11 @@ import org.ehrbase.api.service.FolderService;
 import org.ehrbase.api.service.TenantService;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
-import org.ehrbase.dao.access.interfaces.I_EhrAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderAccess;
 import org.ehrbase.dao.access.jooq.FolderHistoryAccess;
+import org.ehrbase.dao.access.jooq.poc.Ehr;
+import org.ehrbase.dao.access.jooq.poc.EhrDomainService;
 import org.ehrbase.dao.access.util.FolderUtils;
 import org.ehrbase.response.ehrscape.FolderDto;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -59,12 +57,18 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+
 @Service
 @Transactional
 public class FolderServiceImp extends BaseServiceImp implements FolderService {
 
     private final EhrService ehrService;
     private final TenantService tenantService;
+    private final EhrDomainService ehrDomService;
 
     @Autowired
     FolderServiceImp(
@@ -72,10 +76,12 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
             DSLContext context,
             ServerConfig serverConfig,
             EhrService ehrService,
-            TenantService tenantService) {
+            TenantService tenantService,
+            EhrDomainService ehrDomService) {
         super(knowledgeCacheService, context, serverConfig);
         this.ehrService = ehrService;
         this.tenantService = tenantService;
+        this.ehrDomService = ehrDomService;
     }
 
     /**
@@ -165,15 +171,16 @@ public class FolderServiceImp extends BaseServiceImp implements FolderService {
         // Save root directory id to ehr entry
         // EHR must exist at this point, so no null check
         // TODO: Refactor to use UID
-        I_EhrAccess ehrAccess = I_EhrAccess.retrieveInstance(getDataAccess(), ehrId);
+        Ehr ehrAccess = ehrDomService.find(ehrId);
         ehrAccess.setDirectory(FolderUtils.extractUuidFromObjectVersionId(folderId));
-        ehrAccess.update(
-                getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
-                getSystemUuid(),
-                null,
-                null,
-                ContributionChangeType.MODIFICATION,
-                EhrServiceImp.DESCRIPTION);
+        ehrDomService.update(
+            ehrAccess,
+            getCurrentUserId(tenantService.getCurrentTenantIdentifier()),
+            getSystemUuid(),
+            null,
+            null,
+            ContributionChangeType.MODIFICATION,
+            EhrServiceImp.DESCRIPTION);
 
         return get(folderId, null);
     }

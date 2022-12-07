@@ -48,7 +48,7 @@ public class FolderServiceImpTest {
     public void setUp() throws Exception {
         KnowledgeCacheService knowledgeCache = KnowledgeCacheHelper.buildKnowledgeCache(testFolder, cacheRule);
         this.folderService =
-                new FolderServiceImp(knowledgeCache, null, KnowledgeCacheHelper.buildServerConfig(), null, null);
+                new FolderServiceImp(knowledgeCache, null, KnowledgeCacheHelper.buildServerConfig(), null, null, null);
     }
 
     @Ignore(

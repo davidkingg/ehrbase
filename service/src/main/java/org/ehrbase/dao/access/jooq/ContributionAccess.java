@@ -19,11 +19,11 @@ package org.ehrbase.dao.access.jooq;
 
 import static org.ehrbase.jooq.pg.Tables.CONTRIBUTION;
 
-import com.nedap.archie.rm.generic.AuditDetails;
 import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_AuditDetailsAccess;
@@ -51,6 +51,8 @@ import org.jooq.DSLContext;
 import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.nedap.archie.rm.generic.AuditDetails;
 
 /**
  * Created by Christian Chevalley on 4/17/2015.
@@ -331,11 +333,7 @@ public class ContributionAccess extends DataAccess implements I_ContributionAcce
 
     @Override
     public Integer delete() {
-        int count = 0;
-        // delete contribution record
-        count += contributionRecord.delete();
-
-        return count;
+      return contributionRecord.delete();
     }
 
     /**
