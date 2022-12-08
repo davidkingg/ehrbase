@@ -1,4 +1,4 @@
-package org.ehrbase.dao.access.jooq.poc;
+package org.ehrbase.dao.access.jooq.dom;
 
 import static org.ehrbase.jooq.pg.Tables.EHR_;
 import static org.ehrbase.jooq.pg.Tables.STATUS;
@@ -11,14 +11,12 @@ import java.util.UUID;
 
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.jooq.pg.tables.records.AdminDeleteEhrFullRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
-import org.ehrbase.jooq.pg.tables.records.StatusRecord;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.ehrbase.util.UuidGenerator;
@@ -52,16 +50,15 @@ public class Ehr implements ActiveObjectAware<EhrRecord> {
 
     this.domainAccess = domainAccess;
     this.ehrRecord = domainAccess.getContext().newRecord(EHR_);
-    // checking for and executing case of custom ehr ID
+
     ehrRecord.setId(Objects.requireNonNullElseGet(ehrId, UuidGenerator::randomUUID));
 
-    // init a new EHR_STATUS with default values to associate with this EHR
     this.statusAccess = new Status(domainAccess, ehrRecord.getId(), tenantIdentifier);
-    this.statusAccess.getStatusRecord().setId(UuidGenerator.randomUUID());
-    this.statusAccess.getStatusRecord().setIsModifiable(true);
-    this.statusAccess.getStatusRecord().setIsQueryable(true);
-    this.statusAccess.getStatusRecord().setParty(partyId);
-    this.statusAccess.getStatusRecord().setEhrId(ehrRecord.getId());
+    this.statusAccess.getActiveObject().setId(UuidGenerator.randomUUID());
+    this.statusAccess.getActiveObject().setIsModifiable(true);
+    this.statusAccess.getActiveObject().setIsQueryable(true);
+    this.statusAccess.getActiveObject().setParty(partyId);
+    this.statusAccess.getActiveObject().setEhrId(ehrRecord.getId());
 
     ehrRecord.setSystemId(systemId);
     ehrRecord.setDirectory(directoryId);
@@ -74,7 +71,6 @@ public class Ehr implements ActiveObjectAware<EhrRecord> {
 
     this.isNew = true;
 
-    // associate a contribution with this EHR
     contributionAccess = new Contribution(domainAccess, ehrRecord.getId(), tenantIdentifier);
     contributionAccess.setState(ContributionDef.ContributionState.COMPLETE);
   }
@@ -113,27 +109,27 @@ public class Ehr implements ActiveObjectAware<EhrRecord> {
   }
 
   public void setModifiable(Boolean modifiable) {
-    getStatusAccess().getStatusRecord().setIsModifiable(modifiable);
+    getStatusAccess().setModifiable(modifiable);
   }
 
   public void setArchetypeNodeId(String archetypeNodeId) {
-    getStatusAccess().getStatusRecord().setArchetypeNodeId(archetypeNodeId);
+    getStatusAccess().setArchetypeNodeId(archetypeNodeId);
   }
 
   public String getArchetypeNodeId() {
-    return getStatusAccess().getStatusRecord().getArchetypeNodeId();
+    return getStatusAccess().getArchetypeNodeId();
   }
 
   public void setName(DvText name) {
-    new RecordedDvText().toDB(getStatusAccess().getStatusRecord(), STATUS.NAME, name);
+    new RecordedDvText().toDB(getStatusAccess().getActiveObject(), STATUS.NAME, name);
   }
 
   public void setName(DvCodedText name) {
-    new RecordedDvCodedText().toDB(getStatusAccess().getStatusRecord(), STATUS.NAME, name);
+    new RecordedDvCodedText().toDB(getStatusAccess().getActiveObject(), STATUS.NAME, name);
   }
 
   public void setQueryable(Boolean queryable) {
-    getStatusAccess().getStatusRecord().setIsQueryable(queryable);
+    getStatusAccess().setQueryable(queryable);
   }
 
   public void setDateCreated(Timestamp transactionTime) {
@@ -149,14 +145,14 @@ public class Ehr implements ActiveObjectAware<EhrRecord> {
     );
   }
 
-  public EhrRecord getEhrRecord() {
-    return ehrRecord;
+  public Timestamp getCreationDate() {
+    return ehrRecord.getDateCreated();
   }
-
-  public StatusRecord getStatusRecord() {
-    return getStatusAccess().getStatusRecord();
+  
+  public String getCreationdateTzid() {
+    return ehrRecord.getDateCreatedTzid();
   }
-
+  
   public boolean isNew() {
     return isNew;
   }
@@ -166,11 +162,11 @@ public class Ehr implements ActiveObjectAware<EhrRecord> {
   }
 
   public UUID getParty() {
-    return getStatusAccess().getStatusRecord().getParty();
+    return getStatusAccess().getParty();
   }
 
   public void setParty(UUID partyId) {
-    getStatusAccess().getStatusRecord().setParty(partyId);
+    getStatusAccess().setParty(partyId);
   }
 
   public UUID getId() {
@@ -178,11 +174,11 @@ public class Ehr implements ActiveObjectAware<EhrRecord> {
   }
 
   public Boolean isModifiable() {
-    return getStatusAccess().getStatusRecord().getIsModifiable();
+    return getStatusAccess().isModifiable();
   }
 
   public Boolean isQueryable() {
-    return getStatusAccess().getStatusRecord().getIsQueryable();
+    return getStatusAccess().isQueryable();
   }
 
   public UUID getSystemId() {
@@ -230,40 +226,36 @@ public class Ehr implements ActiveObjectAware<EhrRecord> {
     setQueryable(status.isQueryable());
     setOtherDetails(status.getOtherDetails(), null);
 
-    // Locatable stuff if present
-    if (status.getArchetypeNodeId() != null) {
+    if(status.getArchetypeNodeId() != null)
       setArchetypeNodeId(status.getArchetypeNodeId());
-    }
 
-    if (status.getName() != null) {
+    if(status.getName() != null)
       setName(status.getName());
-    }
 
-    UUID subjectUuid = new PersistedPartyProxy(domainAccess.getDataAccess()).getOrCreate(status.getSubject(),
-        getStatusAccess().getStatusRecord().getNamespace());
+    UUID subjectUuid = new PersistedPartyProxy(domainAccess.getDataAccess()).getOrCreate(status.getSubject(), getStatusAccess().getNamespace());
     setParty(subjectUuid);
 
     hasStatusChanged = true;
   }
+  
+  private static final String OBJECT_ID_TMPL = "%s::%s::%s";
 
   public EhrStatus getStatus() {
     EhrStatus status = new EhrStatus();
 
     status.setModifiable(isModifiable());
     status.setQueryable(isQueryable());
-    // set otherDetails if available
-    if (getStatusAccess().getStatusRecord().getOtherDetails() != null) {
-      status.setOtherDetails(getStatusAccess().getStatusRecord().getOtherDetails());
-    }
 
-    // Locatable attribute
+    if (getStatusAccess().getOtherDetails() != null)
+      status.setOtherDetails(getStatusAccess().getOtherDetails());
     status.setArchetypeNodeId(getArchetypeNodeId());
-    Object name = new RecordedDvCodedText().fromDB(getStatusAccess().getStatusRecord(), STATUS.NAME);
+    
+    Object name = new RecordedDvCodedText().fromDB(getStatusAccess().getActiveObject(), STATUS.NAME);
     status.setName(name instanceof DvText ? (DvText) name : (DvCodedText) name);
 
-    UUID statusId = getStatusAccess().getStatusRecord().getId();
-    status.setUid(new HierObjectId(statusId.toString() + "::" + domainAccess.getServerConfig().getNodename() + "::"
-        + I_StatusAccess.getLatestVersionNumber(domainAccess, statusId)));
+    UUID statusId = getStatusAccess().getId();
+    status.setUid(new HierObjectId(
+        String.format(OBJECT_ID_TMPL, statusId.toString(), domainAccess.getServerConfig().getNodename(), getStatusAccess().getLatestVersionNumber())));
 
     PartySelf partySelf = (PartySelf) new PersistedPartyProxy(domainAccess).retrieve(getParty());
     status.setSubject(partySelf);

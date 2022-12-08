@@ -17,20 +17,6 @@
  */
 package org.ehrbase.service;
 
-import com.nedap.archie.rm.RMObject;
-import com.nedap.archie.rm.archetyped.TemplateId;
-import com.nedap.archie.rm.changecontrol.Version;
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.generic.AuditDetails;
-import com.nedap.archie.rm.generic.PartyProxy;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -41,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -59,33 +46,45 @@ import org.ehrbase.dao.access.interfaces.I_CompositionAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
 import org.ehrbase.dao.access.interfaces.I_FolderAccess;
-import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AuditDetailsAccess;
+import org.ehrbase.dao.access.jooq.dom.Status;
+import org.ehrbase.dao.access.jooq.dom.StatusDomainService;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.ContributionDto;
 import org.jooq.DSLContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nedap.archie.rm.RMObject;
+import com.nedap.archie.rm.archetyped.TemplateId;
+import com.nedap.archie.rm.changecontrol.Version;
+import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.datatypes.CodePhrase;
+import com.nedap.archie.rm.datavalues.DvCodedText;
+import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.TerminologyId;
+
 @Service
 @Transactional
 public class ContributionServiceImp extends BaseServiceImp implements ContributionService {
-    // the version list in a contribution adds an type tag to each item, so the specific object is distinguishable
     public static final String TYPE_COMPOSITION = "COMPOSITION";
     public static final String TYPE_EHRSTATUS = "EHR_STATUS";
     public static final String TYPE_FOLDER = "FOLDER";
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final CompositionService compositionService;
     private final EhrService ehrService;
     private final FolderService folderService;
     private final TenantService tenantService;
+    private final StatusDomainService statusDomainService;
 
     enum SupportedClasses {
         COMPOSITION,
@@ -101,12 +100,14 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
             FolderService folderService,
             DSLContext context,
             ServerConfig serverConfig,
-            TenantService tenantService) {
+            TenantService tenantService,
+            StatusDomainService statusDomainService) {
         super(knowledgeCacheService, context, serverConfig);
         this.compositionService = compositionService;
         this.ehrService = ehrService;
         this.folderService = folderService;
         this.tenantService = tenantService;
+        this.statusDomainService = statusDomainService;
     }
 
     @Override
@@ -512,23 +513,18 @@ public class ContributionServiceImp extends BaseServiceImp implements Contributi
     private Map<String, String> retrieveUuidsOfContributionObjects(UUID contribution) {
         Map<String, String> objRefs = new HashMap<>();
 
-        // query for compositions   // TODO: refactor to use service layer only!?
-        Map<ObjectVersionId, I_CompositionAccess> compositions = I_CompositionAccess.retrieveInstancesInContribution(
-                this.getDataAccess(), contribution, getServerConfig().getNodename());
-        // for each fetched composition: add it to the return map and add the composition type tag - ignoring the access
-        // obj
+        Map<ObjectVersionId, I_CompositionAccess> compositions =
+            I_CompositionAccess.retrieveInstancesInContribution(this.getDataAccess(), contribution, getServerConfig().getNodename());
+
         compositions.forEach((k, v) -> objRefs.put(k.getValue(), TYPE_COMPOSITION));
 
-        // query for statuses       // TODO: refactor to use service layer only!?
-        Map<ObjectVersionId, I_StatusAccess> statuses = I_StatusAccess.retrieveInstanceByContribution(
-                this.getDataAccess(), contribution, getServerConfig().getNodename());
+        Map<ObjectVersionId, Status> statuses =
+            statusDomainService.retrieveInstanceByContribution(contribution, getServerConfig().getNodename());
+        
         statuses.forEach((k, v) -> objRefs.put(k.getValue(), TYPE_EHRSTATUS));
 
-        // query for folders        // TODO: refactor to use service layer only!?
-        Set<ObjectVersionId> folders = I_FolderAccess.retrieveFolderVersionIdsInContribution(
-                getDataAccess(), contribution, getServerConfig().getNodename());
+        Set<ObjectVersionId> folders = I_FolderAccess.retrieveFolderVersionIdsInContribution(getDataAccess(), contribution, getServerConfig().getNodename());
         folders.forEach(f -> objRefs.put(f.toString(), TYPE_FOLDER));
-
         return objRefs;
     }
 

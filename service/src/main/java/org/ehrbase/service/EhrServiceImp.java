@@ -44,12 +44,13 @@ import org.ehrbase.api.service.TenantService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.dao.access.interfaces.I_AttestationAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
-import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.AttestationAccess;
+import org.ehrbase.dao.access.jooq.dom.Ehr;
+import org.ehrbase.dao.access.jooq.dom.EhrDomainService;
+import org.ehrbase.dao.access.jooq.dom.Status;
+import org.ehrbase.dao.access.jooq.dom.StatusDomainService;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
-import org.ehrbase.dao.access.jooq.poc.Ehr;
-import org.ehrbase.dao.access.jooq.poc.EhrDomainService;
 import org.ehrbase.jooq.pg.Routines;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
@@ -91,6 +92,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     private final ValidationService validationService;
     private final TenantService tenantService;
     private final EhrDomainService ehrDomService;
+    private final StatusDomainService statusDomService;
 
     @Autowired
     public EhrServiceImp(
@@ -99,11 +101,13 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
             DSLContext context,
             ServerConfig serverConfig,
             TenantService tenantService,
-            EhrDomainService ehrDomService) {
+            EhrDomainService ehrDomService,
+            StatusDomainService statusDomService) {
         super(knowledgeCacheService, context, serverConfig);
         this.validationService = validationService;
         this.tenantService = tenantService;
         this.ehrDomService = ehrDomService;
+        this.statusDomService = statusDomService;
     }
 
     private UUID getEmptyPartyByTenant() {
@@ -202,46 +206,40 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(
             UUID ehrUuid, UUID versionedObjectUid, int version) {
-        // pre-step: check for valid ehrId
         if (!hasEhr(ehrUuid)) {
             throw new ObjectNotFoundException("ehr", "No EHR found with given ID: " + ehrUuid.toString());
         }
 
-        if ((version == 0) || (I_StatusAccess.getLatestVersionNumber(getDataAccess(), versionedObjectUid) < version)) {
-            throw new ObjectNotFoundException(
-                    "versioned_ehr_status", "No VERSIONED_EHR_STATUS with given version: " + version);
+        if ((version == 0) || (statusDomService.getLatestVersionNumber(versionedObjectUid) < version)) {
+            throw new ObjectNotFoundException("versioned_ehr_status", "No VERSIONED_EHR_STATUS with given version: " + version);
         }
 
-        I_StatusAccess statusAccess = I_StatusAccess.getVersionMapOfStatus(getDataAccess(), versionedObjectUid)
-                .get(version);
+        Status statusAccess = statusDomService.getVersionMapOfStatus(versionedObjectUid).get(version);
 
-        ObjectVersionId versionId = new ObjectVersionId(
-                versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + version);
-        DvCodedText lifecycleState = new DvCodedText(
-                "complete", new CodePhrase("532")); // TODO: once lifecycle state is supported, get it here dynamically
+        ObjectVersionId versionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + version);
+        DvCodedText lifecycleState = new DvCodedText("complete", new CodePhrase("532"));
         AuditDetails commitAudit = statusAccess.getAuditDetailsAccess().getAsAuditDetails();
-        ObjectRef<HierObjectId> contribution = new ObjectRef<>(
-                new HierObjectId(
-                        statusAccess.getStatusRecord().getInContribution().toString()),
+        
+        ObjectRef<HierObjectId> contribution =
+            new ObjectRef<>(
+                new HierObjectId(statusAccess.getContributionId().toString()),
                 "openehr",
                 "contribution");
-        List<UUID> attestationIdList = I_AttestationAccess.retrieveListOfAttestationsByRef(
-                getDataAccess(), statusAccess.getStatusRecord().getAttestationRef());
-        List<Attestation> attestations = null; // as default, gets content if available in the following lines
-        if (!attestationIdList.isEmpty()) {
-            attestations = new ArrayList<>();
-            for (UUID id : attestationIdList) {
-                I_AttestationAccess a = new AttestationAccess(getDataAccess()).retrieveInstance(id);
-                attestations.add(a.getAsAttestation());
-            }
+        
+        List<UUID> attestationIdList = I_AttestationAccess.retrieveListOfAttestationsByRef(getDataAccess(), statusAccess.getAttestationRef());
+        List<Attestation> attestations = null;
+
+        if(!attestationIdList.isEmpty()) {
+          List<Attestation> fAttestations = new ArrayList<>();
+          attestationIdList.forEach(id -> fAttestations.add(new AttestationAccess(getDataAccess()).retrieveInstance(id).getAsAttestation()));
+          attestations = fAttestations;
         }
 
         ObjectVersionId precedingVersionId = null;
         // check if there is a preceding version and set it, if available
         if (version > 1) {
             // in the current scope version is an int and therefore: preceding = current - 1
-            precedingVersionId = new ObjectVersionId(
-                    versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + (version - 1));
+            precedingVersionId = new ObjectVersionId(versionedObjectUid + "::" + getServerConfig().getNodename() + "::" + (version - 1));
         }
 
         OriginalVersion<EhrStatus> versionStatus = new OriginalVersion<>(
@@ -324,8 +322,8 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         try {
             Ehr ehrAccess = ehrDomService.find(ehrId);
             OffsetDateTime offsetDateTime = OffsetDateTime.from(
-                    LocalDateTime.from(ehrAccess.getEhrRecord().getDateCreated().toLocalDateTime())
-                            .atZone(ZoneId.of(ehrAccess.getEhrRecord().getDateCreatedTzid())));
+                    LocalDateTime.from(ehrAccess.getCreationDate().toLocalDateTime())
+                            .atZone(ZoneId.of(ehrAccess.getCreationdateTzid())));
             return new DvDateTime(offsetDateTime);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -336,7 +334,10 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
     @Override
     public Integer getEhrStatusVersionByTimestamp(UUID ehrUid, Timestamp timestamp) {
         Ehr ehrAccess = ehrDomService.find(ehrUid);
-        return ehrAccess.getStatusAccess().getEhrStatusVersionFromTimeStamp(timestamp);
+        
+        return statusDomService.getEhrStatusVersionFromTimeStamp(
+            ehrAccess.getStatusAccess().getId(),
+            timestamp);
     }
 
     /**
@@ -348,8 +349,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         try {
             Ehr ehrAccess = ehrDomService.find(ehrStatusId);
             UUID statusId = ehrAccess.getStatusId();
-            Integer version = I_StatusAccess.getLatestVersionNumber(getDataAccess(), statusId);
-
+            Integer version = statusDomService.getLatestVersionNumber(statusId);
             return statusId.toString() + "::" + getServerConfig().getNodename() + "::" + version;
         } catch (Exception e) {
             throw new InternalServerException(e);
@@ -376,7 +376,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
 
     @Override
     public boolean hasStatus(UUID statusId) {
-        return I_StatusAccess.exists(getDataAccess(), statusId);
+        return statusDomService.exists(statusId);
     }
 
     @Override
@@ -405,7 +405,7 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         Ehr ehrAccess = ehrDomService.find(ehrUid);
 
         // get number of versions
-        int versions = I_StatusAccess.getLatestVersionNumber(getDataAccess(), ehrAccess.getStatusId());
+        int versions = statusDomService.getLatestVersionNumber(ehrAccess.getStatusId());
         // fetch each version
         UUID versionedObjectUid = getEhrStatusVersionedObjectUidByEhr(ehrUid);
         RevisionHistory revisionHistory = new RevisionHistory();

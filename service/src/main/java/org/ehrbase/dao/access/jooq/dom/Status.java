@@ -1,17 +1,15 @@
-package org.ehrbase.dao.access.jooq.poc;
+package org.ehrbase.dao.access.jooq.dom;
 
 import static org.ehrbase.jooq.pg.Tables.STATUS;
 import static org.ehrbase.jooq.pg.Tables.STATUS_HISTORY;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.UUID;
 
-import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
-import org.ehrbase.dao.access.interfaces.I_StatusAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.util.ContributionDef;
 import org.ehrbase.jooq.pg.tables.records.StatusHistoryRecord;
@@ -46,7 +44,6 @@ public class Status implements ActiveObjectAware<StatusRecord> {
   
   public Status(I_DomainAccess domainAccess, UUID ehrId, StatusRecord statusRecord) {
     this.domainAccess = domainAccess;
-    
     this.statusRecord = statusRecord;
     
     contributionAccess = new Contribution(domainAccess, ehrId, statusRecord.getNamespace());
@@ -56,7 +53,6 @@ public class Status implements ActiveObjectAware<StatusRecord> {
   
   public Status(I_DomainAccess domainAccess, UUID ehrId, StatusHistoryRecord statusHistoryRecord) {
     this.domainAccess = domainAccess;
-    
     this.statusRecord = Mapper.from(statusHistoryRecord);
     
     contributionAccess = new Contribution(domainAccess, ehrId, statusRecord.getNamespace());
@@ -78,10 +74,6 @@ public class Status implements ActiveObjectAware<StatusRecord> {
 
   public UUID getId() {
     return statusRecord.getId();
-  }
-
-  public StatusRecord getStatusRecord() {
-    return this.statusRecord;
   }
 
   public void setAuditDetailsAccess(AuditDetail auditDetailsAccess) {
@@ -108,6 +100,10 @@ public class Status implements ActiveObjectAware<StatusRecord> {
     this.statusRecord.setInContribution(contribution);
   }
 
+  public UUID getAttestationRef() {
+    return statusRecord.getAttestationRef();
+  }
+  
   public UUID getContributionId() {
     return this.statusRecord.getInContribution();
   }
@@ -128,36 +124,6 @@ public class Status implements ActiveObjectAware<StatusRecord> {
     this.contributionAccess.setAuditDetailsValues(committerId, systemId, description, changeType);
   }
 
-  public int getEhrStatusVersionFromTimeStamp(Timestamp time) {
-    UUID statusUid = this.statusRecord.getId();
-    // retrieve current version from status tables
-    I_StatusAccess retStatusAccess = I_StatusAccess.retrieveInstance(domainAccess.getDataAccess(), statusUid);
-
-    // retrieve all other versions from status_history and sort by time
-    Result result = domainAccess.getContext().selectFrom(STATUS_HISTORY).where(STATUS_HISTORY.ID.eq(statusUid))
-        .orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc()) // latest at top, i.e. [0]
-        .fetch();
-
-    // see 'what version was the top version at moment T?'
-    // first: is time T after current version? then current version is result
-    if (time.after(retStatusAccess.getStatusRecord().getSysTransaction())) {
-      return getLatestVersionNumber(domainAccess, statusUid);
-    }
-    // second: if not, which one of the historical versions matches?
-    for (int i = 0; i < result.size(); i++) {
-      if (result.get(i) instanceof StatusHistoryRecord) {
-        // is time T after this version? then return its version number
-        if (time.after(((StatusHistoryRecord) result.get(i)).getSysTransaction())) {
-          return result.size() - i; // reverses iterator because order was reversed above and always get non zero
-        }
-      } else {
-        throw new InternalServerException("Problem comparing timestamps of EHR_STATUS versions");
-      }
-    }
-
-    throw new ObjectNotFoundException("EHR_STATUS", "Could not find EHR_STATUS version matching given timestamp");
-  }
-
   public Timestamp getInitialTimeOfVersionedEhrStatus() {
     Result<StatusHistoryRecord> result = domainAccess.getContext().selectFrom(STATUS_HISTORY)
         .where(STATUS_HISTORY.EHR_ID.eq(statusRecord.getEhrId())) // ehrId from this instance
@@ -169,31 +135,57 @@ public class Status implements ActiveObjectAware<StatusRecord> {
       return statusHistoryRecord.getSysTransaction();
     }
 
-    // if haven't returned above use time from latest version (already available in
-    // this instance)
     return statusRecord.getSysTransaction();
   }
 
+  public void setModifiable(Boolean modifiable) {
+    this.statusRecord.setIsModifiable(modifiable);
+  }
+  
+  public void setQueryable(Boolean queryable) {
+    this.statusRecord.setIsQueryable(queryable);
+  }
+  
+  public Boolean isModifiable() {
+    return this.statusRecord.getIsModifiable();
+  }
+  
+  public Boolean isQueryable() {
+    return this.statusRecord.getIsQueryable();
+  }
+  
+  public String getArchetypeNodeId() {
+    return statusRecord.getArchetypeNodeId();
+  }
+  
+  public void setArchetypeNodeId(String nodeId) {
+    statusRecord.setArchetypeNodeId(nodeId);
+  }
+  
+  public UUID getParty() {
+    return statusRecord.getParty();
+  }
+  
+  public void setParty(UUID partsId) {
+    statusRecord.setParty(partsId);
+  }
+  
   public EhrStatus getStatus() {
     EhrStatus status = new EhrStatus();
 
-    status.setModifiable(getStatusRecord().getIsModifiable());
-    status.setQueryable(getStatusRecord().getIsQueryable());
-    // set otherDetails if available
-    if (getStatusRecord().getOtherDetails() != null) {
-      status.setOtherDetails(getStatusRecord().getOtherDetails());
-    }
+    status.setModifiable(isModifiable());
+    status.setQueryable(isQueryable());
 
-    // Locatable attribute
-    status.setArchetypeNodeId(getStatusRecord().getArchetypeNodeId());
-    Object name = new RecordedDvCodedText().fromDB(getStatusRecord(), STATUS.NAME);
+    Optional.ofNullable(getOtherDetails()).ifPresent(d -> status.setOtherDetails(getOtherDetails()));
+
+    status.setArchetypeNodeId(getArchetypeNodeId());
+    Object name = new RecordedDvCodedText().fromDB(getActiveObject(), STATUS.NAME);
     status.setName(name instanceof DvText ? (DvText) name : (DvCodedText) name);
 
-    UUID statusId = getStatusRecord().getId();
-    status.setUid(new HierObjectId(statusId.toString() + "::" + domainAccess.getServerConfig().getNodename() + "::"
-        + I_StatusAccess.getLatestVersionNumber(domainAccess, statusId)));
+    UUID statusId = getId();
+    status.setUid(new HierObjectId(statusId.toString() + "::" + domainAccess.getServerConfig().getNodename() + "::" + getLatestVersionNumber()));
 
-    PartySelf partySelf = (PartySelf) new PersistedPartyProxy(domainAccess).retrieve(getStatusRecord().getParty());
+    PartySelf partySelf = (PartySelf) new PersistedPartyProxy(domainAccess).retrieve(getParty());
     status.setSubject(partySelf);
 
     return status;
@@ -220,20 +212,11 @@ public class Status implements ActiveObjectAware<StatusRecord> {
   public Timestamp getSysTransaction() {
     return this.statusRecord.getSysTransaction();
   }
-
-  public static Integer getLatestVersionNumber(I_DomainAccess domainAccess, UUID statusId) {
-
-    if (!hasPreviousVersionOfStatus(domainAccess, statusId)) {
-      return 1;
-    }
-
+  
+  public Integer getLatestVersionNumber() {
+    UUID statusId = statusRecord.getId();
     int versionCount = domainAccess.getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.ID.eq(statusId));
-
-    return versionCount + 1;
-  }
-
-  private static boolean hasPreviousVersionOfStatus(I_DomainAccess domainAccess, UUID ehrStatusId) {
-    return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
+    return versionCount == 0 ? 1 : versionCount + 1;
   }
 
   @Override

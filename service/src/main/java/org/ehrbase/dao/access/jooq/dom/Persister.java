@@ -1,4 +1,4 @@
-package org.ehrbase.dao.access.jooq.poc;
+package org.ehrbase.dao.access.jooq.dom;
 
 import java.util.UUID;
 

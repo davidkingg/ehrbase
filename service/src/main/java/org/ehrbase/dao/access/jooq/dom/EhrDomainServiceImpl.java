@@ -1,4 +1,4 @@
-package org.ehrbase.dao.access.jooq.poc;
+package org.ehrbase.dao.access.jooq.dom;
 
 import static org.ehrbase.jooq.pg.Tables.COMPOSITION;
 import static org.ehrbase.jooq.pg.Tables.EHR_;
@@ -181,8 +181,8 @@ public class EhrDomainServiceImpl implements EhrDomainService {
         Ehr ehrAccess = new Ehr(domainAccess, record);
         ehrAccess.setStatusAccess(statusService.retrieveInstanceByEhrId(ehrAccess.getId()));
 
-        if (ehrAccess.getStatusAccess().getStatusRecord().getOtherDetails() != null)
-            ehrAccess.otherDetails = ehrAccess.getStatusAccess().getStatusRecord().getOtherDetails();
+        if (ehrAccess.getStatusAccess().getOtherDetails() != null)
+            ehrAccess.otherDetails = ehrAccess.getStatusAccess().getOtherDetails();
 
         ehrAccess.setNew(false);
         ehrAccess.setContributionAccess(contributionService.retrieveInstance(ehrAccess.getStatusAccess().getContributionId()));
@@ -199,14 +199,14 @@ public class EhrDomainServiceImpl implements EhrDomainService {
         Map<String, Object> idlist = new MultiValueMap();
 
         context
-          .selectFrom(IDENTIFIER).where(IDENTIFIER.PARTY.eq(getParty(ehrAccess))).fetch()
+          .selectFrom(IDENTIFIER).where(IDENTIFIER.PARTY.eq(ehrAccess.getParty())).fetch()
           .forEach(record -> {
             idlist.put("identifier_issuer", record.getIssuer());
             idlist.put("identifier_id_value", record.getIdValue());
           });
 
         context
-          .selectFrom(PARTY_IDENTIFIED).where(PARTY_IDENTIFIED.ID.eq(getParty(ehrAccess))).fetch()
+          .selectFrom(PARTY_IDENTIFIED).where(PARTY_IDENTIFIED.ID.eq(ehrAccess.getParty())).fetch()
           .forEach(record -> {
             idlist.put("ref_name_space", record.getPartyRefNamespace());
             idlist.put("id_value", record.getPartyRefValue());
@@ -236,10 +236,6 @@ public class EhrDomainServiceImpl implements EhrDomainService {
         });
 
         return compositionlist;
-    }
-
-    private UUID getParty(Ehr ehrAccess) {
-        return ehrAccess.getStatusRecord().getParty();
     }
 
     public boolean removeDirectory(UUID ehrId) {

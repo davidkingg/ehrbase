@@ -1,4 +1,4 @@
-package org.ehrbase.dao.access.jooq.poc;
+package org.ehrbase.dao.access.jooq.dom;
 
 import static org.ehrbase.jooq.pg.Tables.PARTY_IDENTIFIED;
 import static org.ehrbase.jooq.pg.Tables.STATUS;
@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess;
 import org.ehrbase.dao.access.interfaces.I_ConceptAccess.ContributionChangeType;
 import org.ehrbase.dao.access.interfaces.I_ContributionAccess;
@@ -27,7 +28,7 @@ import org.springframework.stereotype.Service;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
 @Service
-public class StatusDomainService {
+public class StatusDomainServiceImpl implements StatusDomainService {
 
   private final I_DomainAccess domainAccess;
   private final ContributionDomainService contributionService;
@@ -35,7 +36,7 @@ public class StatusDomainService {
   private final Persister<StatusRecord,Status> persister;
   
 
-  public StatusDomainService(I_DomainAccess domainAccess, ContributionDomainService contributionService,
+  public StatusDomainServiceImpl(I_DomainAccess domainAccess, ContributionDomainService contributionService,
       AuditDetailDomainService auditDetailsService) {
     this.domainAccess = domainAccess;
     this.contributionService = contributionService;
@@ -131,35 +132,26 @@ public class StatusDomainService {
 
   public Map<Integer, Status> getVersionMapOfStatus(UUID statusId) {
     Map<Integer, Status> versionMap = new HashMap<>();
-
-    // create counter with highest version, to keep track of version number and
-    // allow check in the end
     Integer versionCounter = getLatestVersionNumber(statusId);
 
-    // fetch matching entry
     StatusRecord record = domainAccess.getContext().fetchOne(STATUS, STATUS.ID.eq(statusId));
     if (record != null) {
       Status statusAccess = createStatusAccessForRetrieval(record, null, record.getNamespace());
       versionMap.put(versionCounter, statusAccess);
-
       versionCounter--;
     }
 
-    // if composition was removed (i.e. from "COMPOSITION" table) *or* other
-    // versions are existing
-    Result<StatusHistoryRecord> historyRecords = domainAccess.getContext().selectFrom(STATUS_HISTORY)
-        .where(STATUS_HISTORY.ID.eq(statusId)).orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc()).fetch();
+    Result<StatusHistoryRecord> historyRecords = domainAccess.getContext()
+      .selectFrom(STATUS_HISTORY).where(STATUS_HISTORY.ID.eq(statusId)).orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc()).fetch();
 
     for (StatusHistoryRecord historyRecord : historyRecords) {
-      Status historyAccess = createStatusAccessForRetrieval(null, historyRecord,
-          historyRecord.getNamespace());
+      Status historyAccess = createStatusAccessForRetrieval(null, historyRecord, historyRecord.getNamespace());
       versionMap.put(versionCounter, historyAccess);
       versionCounter--;
     }
 
-    if (versionCounter != 0) {
+    if (versionCounter != 0)
       throw new InternalServerException("Version Map generation failed");
-    }
 
     return versionMap;
   }
@@ -261,7 +253,6 @@ public class StatusDomainService {
     );
   }
   
-  
   private Integer internalDelete(Status status, LocalDateTime timestamp, UUID committerId, UUID systemId, String description) {
     String tenantIdentifier = status.getNamespace();
     status.setSysTransaction(Timestamp.valueOf(timestamp));
@@ -284,7 +275,7 @@ public class StatusDomainService {
   }
   
   private int createAndCommitNewDeletedVersionAsHistory(Status status, UUID delAuditId, UUID contrib, String tenantIdentifier) {
-    StatusHistoryRecord newRecord = Mapper.from(status.getStatusRecord());
+    StatusHistoryRecord newRecord = Mapper.from(status.getActiveObject());
       newRecord.setInContribution(contrib);
       newRecord.setNamespace(tenantIdentifier);
       newRecord.setHasAudit(delAuditId);
@@ -296,7 +287,26 @@ public class StatusDomainService {
     else
       return 1;
   }
-  //----------------------------------------------------------------------------------------------------------------------------------------  
+  
+  public int getEhrStatusVersionFromTimeStamp(UUID statusUid, Timestamp time) {
+    Status retStatusAccess = retrieveInstance(statusUid);
+
+    Result result = domainAccess.getContext()
+      .selectFrom(STATUS_HISTORY).where(STATUS_HISTORY.ID.eq(statusUid)).orderBy(STATUS_HISTORY.SYS_TRANSACTION.desc()).fetch();
+
+    if(time.after(retStatusAccess.getSysTransaction()))
+      return getLatestVersionNumber(statusUid);
+
+    for(int i = 0; i < result.size(); i++) {
+      if(result.get(i) instanceof StatusHistoryRecord rec) {
+        if (time.after(rec.getSysTransaction()))
+          return result.size() - i;
+      } else
+        throw new InternalServerException("Problem comparing timestamps of EHR_STATUS versions");
+    }
+
+    throw new ObjectNotFoundException("EHR_STATUS", "Could not find EHR_STATUS version matching given timestamp");
+  }  
 
   private Status createStatusAccessForRetrieval(StatusRecord record, StatusHistoryRecord historyRecord, String tenantIdentifier) {
     Status statusAccess;
@@ -318,21 +328,11 @@ public class StatusDomainService {
   }
 
   public Integer getLatestVersionNumber(UUID statusId) {
-
-    if (!hasPreviousVersionOfStatus(statusId)) {
-      return 1;
-    }
-
     int versionCount = domainAccess.getContext().fetchCount(STATUS_HISTORY, STATUS_HISTORY.ID.eq(statusId));
-
-    return versionCount + 1;
+    return versionCount == 0 ? 1 : versionCount + 1;
   }
 
-  private boolean hasPreviousVersionOfStatus(UUID ehrStatusId) {
-    return domainAccess.getContext().fetchExists(STATUS_HISTORY, STATUS_HISTORY.ID.eq(ehrStatusId));
-  }
-
-  public static boolean exists(I_DomainAccess domainAccess, UUID ehrStatusId) {
+  public boolean exists(UUID ehrStatusId) {
     return domainAccess.getContext().fetchExists(STATUS, STATUS.ID.eq(ehrStatusId));
   }
 }
