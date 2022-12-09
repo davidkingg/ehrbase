@@ -22,7 +22,7 @@ public class AuditDetailDomainService {
   
   public AuditDetailDomainService(I_DomainAccess dataAccess) {
     this.dataAccess = dataAccess;
-    this.persister = Persister.persister(null);
+    this.persister = Persister.persister(dataAccess);
   }
 
   public AuditDetail retrieveInstance(UUID auditId) {

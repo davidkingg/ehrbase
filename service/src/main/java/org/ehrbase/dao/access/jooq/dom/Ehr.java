@@ -9,18 +9,14 @@ import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.dao.access.interfaces.I_DomainAccess;
 import org.ehrbase.dao.access.interfaces.I_SystemAccess;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.util.ContributionDef;
-import org.ehrbase.jooq.pg.Routines;
-import org.ehrbase.jooq.pg.tables.records.AdminDeleteEhrFullRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
 import org.ehrbase.service.RecordedDvCodedText;
 import org.ehrbase.service.RecordedDvText;
 import org.ehrbase.util.UuidGenerator;
-import org.jooq.Result;
 
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datavalues.DvCodedText;
@@ -261,15 +257,6 @@ public class Ehr implements ActiveObjectAware<EhrRecord> {
     status.setSubject(partySelf);
 
     return status;
-  }
-
-  //------------------------------------------------------------------------------------------------------------------------
-  //:TODO currently not impl. should be handeld by a specific REST/Service call with high priviledges  
-  public void adminDeleteEhr() {
-    Result<AdminDeleteEhrFullRecord> result = Routines.adminDeleteEhrFull(domainAccess.getContext().configuration(), this.getId());
-    if (result.isEmpty() || !Boolean.TRUE.equals(result.get(0).getDeleted())) {
-      throw new InternalServerException("Admin deletion of EHR failed!");
-    }
   }
 
   @Override

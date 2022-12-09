@@ -33,6 +33,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.authorization.EhrbaseAuthorization;
+import org.ehrbase.api.authorization.EhrbasePermission;
 import org.ehrbase.api.definitions.ServerConfig;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -52,6 +54,7 @@ import org.ehrbase.dao.access.jooq.dom.StatusDomainService;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyProxy;
 import org.ehrbase.dao.access.jooq.party.PersistedPartyRef;
 import org.ehrbase.jooq.pg.Routines;
+import org.ehrbase.jooq.pg.tables.records.AdminDeleteEhrFullRecord;
 import org.ehrbase.response.ehrscape.CompositionFormat;
 import org.ehrbase.response.ehrscape.EhrStatusDto;
 import org.ehrbase.response.ehrscape.StructuredString;
@@ -61,6 +64,7 @@ import org.ehrbase.serialisation.xmlencoding.CanonicalXML;
 import org.ehrbase.util.PartyUtils;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
+import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,8 +87,8 @@ import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 
-@Service(value = "ehrService")
 @Transactional()
+@Service(value = "ehrService")
 public class EhrServiceImp extends BaseServiceImp implements EhrService {
     private static Logger logger = LoggerFactory.getLogger(EhrServiceImp.class);
     public static final String DESCRIPTION = "description";
@@ -474,11 +478,15 @@ public class EhrServiceImp extends BaseServiceImp implements EhrService {
         }
     }
 
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_ADMIN_ACCESS)
+    @EhrbaseAuthorization(permission = EhrbasePermission.EHRBASE_EHR_DELETE)
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void adminDeleteEhr(UUID ehrId) {
-        Ehr ehrAccess = ehrDomService.find(ehrId);
-        ehrAccess.adminDeleteEhr();
+        Result<AdminDeleteEhrFullRecord> result = Routines.adminDeleteEhrFull(getDataAccess().getContext().configuration(), ehrId);
+        if(result.isEmpty() || !Boolean.TRUE.equals(result.get(0).getDeleted())) {
+          throw new InternalServerException("Admin deletion of EHR failed!");
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
